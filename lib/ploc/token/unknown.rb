@@ -1,4 +1,4 @@
-module Token
-  class Unknown < Token::Base
+module Ploc::Token
+  class Unknown < Base
   end
 end

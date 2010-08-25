@@ -1,4 +1,4 @@
-module Token
-  class Identifier < Token::Base
+module Ploc::Token
+  class Identifier < Base
   end
 end

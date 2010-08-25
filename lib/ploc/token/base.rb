@@ -1,4 +1,4 @@
-module Token
+module Ploc::Token
   class Base < Struct.new(:token)
     def self.build(token)
       new(token)
