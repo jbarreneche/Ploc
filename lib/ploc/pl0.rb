@@ -14,9 +14,9 @@ module Ploc
       procedure :zero_or_more do
         sequence identifier, semicolon, block, :terminator => semicolon
       end
-      proposition
+      sentence
     end
-    define :proposition do
+    define :sentence do
       branch :optional do
         sequence identifier, assign, expression
         sequence call, identifier
@@ -47,4 +47,16 @@ module Ploc
         sequence left_par, expression, right_par
       end
     end
+    Token::ReservedWord::ALL.each do |word|
+      term Token::ReservedWord.santize(word).to_sym, Token::ReservedWord, word
+    end
+    term :assign, Token::Operand, Token::Operand::SIGN
+    term :bop, Token::Operand, *Token::Operand::BOPS
+    term :ration, Token::Operand, *Token::Operand::RATIONS
+    term :sign, Token::Operand, *Token::Operand::SIGNS
+    term :left_par, Token::Operand, Token::Operand::LEFT_PAR
+    term :right_par, Token::Operand, Token::Operand::RIGHT_PAR
+    term :identifier, Token::Identifier
+    term :number, Token::Number
   end
+end
