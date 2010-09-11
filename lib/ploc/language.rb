@@ -1,8 +1,7 @@
 require 'ploc/language_builder'
 module Ploc
   class Language
-    attr_accessor :nodes
-    attr_accessor :errors
+    attr_accessor :nodes, :errors
     def self.build(&block)
       LanguageBuilder.new(&block).build
     end
@@ -17,7 +16,7 @@ module Ploc
     end
     def validate(entry_point, tokens)
       @errors = []
-      last_token = send entry_point, tokens.next, tokens
+      last_token = send(entry_point, tokens.next, tokens)
       @errors << "Garbage found #{last_token.inspect}" if last_token
       @errors
     end

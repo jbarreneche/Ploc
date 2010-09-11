@@ -2,37 +2,33 @@ module Ploc::LanguageNode
   class Base < BasicObject
     attr_accessor :language
     def initialize(*args, &block)
-      @lock = false
       instance_eval(&block) if block
-      @lock = true
+      @initialization_finished = true
     end
     def sequence(*params, &block)
-      seq = Sequence.new(*params, &block)
-      add_node(seq)
-      seq
+      add_node(Sequence.new(*params, &block))
     end
     def branch(*params, &block)
-      Branch.new(*params, &block)
+      add_node(Branch.new(*params, &block))
     end
     def fetch_node(node_name)
-      if Base === node_name
-        node_name.language = self.language
-        node_name
-      else
-        @language.nodes[node_name]
-      end
+      node = Base === node_name ? node_name : @language.nodes[node_name]
+      node.language = self.language
+      node
+    end
+    
+    # Subclasses should override if they want to have the nodes used
+    def add_node(node)
+      node
     end
     def method_missing(meth, *args, &block)
-      unless @lock
+      unless @initialization_finished
         node = block ? ConstWithBlock.new(meth, *args, &block) : meth 
-        add_node(node) unless @dont_add
+        add_node(node)
         node
       else
         super
       end
-    end
-    def inspect
-      "Inspecting ..."
     end
   end
 end

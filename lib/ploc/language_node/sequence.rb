@@ -8,43 +8,41 @@ module Ploc::LanguageNode
       super
     end
     def call(current, remaining)
-      last = sequence_nodes.inject(current) do |current, node|
-        node.language = self.language
-        node.call(current, remaining)
-      end
-      if @options[:separator] && separator_node.matches_first?(last)
-        last = separator_node.call(last, remaining)
-        last = self.call(last,remaining)
-      end
+      last = call_sequence(current, remaining)
+      last = call_separator(last, remaining)
       last
     end
     def separator_node
-      @separator_node ||= fetch_node(@options[:separator])
+      @separator_node ||= fetch_node(@options[:separator]) if @options[:separator]
     end
     def matches_first?(token)
       sequence_nodes.first.matches_first?(token)
     end
     def sequence_nodes
       @sequence_nodes ||= @sequence.map do |node_name| 
-        node = fetch_node(node_name)
-        node.language = self.language
-        node
+        fetch_node(node_name)
       end
     end
     def add_node(node)
       @sequence << node
-    end
-    def language=(language)
-      super
-      sequence_nodes
-    end
-    def sequence(*args, &block)
-      @dont_add = true
-      super
-      @dont_add = false
+      node
     end
     def inspect
-      "<Node sequence:#{@sequence.inspect} options:#{@options} language:#{language.inspect}>"
+      "<Node sequence:#{@sequence.inspect} options:#{@options}>"
+    end
+  private
+    def call_sequence(current, remaining)
+      sequence_nodes.inject(current) do |current, node|
+        node.call(current, remaining)
+      end
+    end
+    def call_separator(current, remaining)
+      if separator_node && separator_node.matches_first?(current)
+        last = separator_node.call(current, remaining)
+        self.call(last,remaining)
+      else
+        current
+      end
     end
   end
 end
