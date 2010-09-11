@@ -5,12 +5,18 @@ module Ploc::LanguageNode
       @matcher = matcher
     end
     def call(current, remaining)
-      if matcher === current
+      if matches_first?(current)
         remaining.next
       else
-        language.errors << 'Unexpected Symbol' 
+        language.errors << "Expecting: #{@matcher.inspect} but found unexpected Symbol (#{current.inspect})" 
         current
       end
+    end
+    def matches_first?(token)
+      matcher === token
+    end
+    def inspect
+      "<Node terminal:#{@matcher.inspect}>"
     end
   end
 end
