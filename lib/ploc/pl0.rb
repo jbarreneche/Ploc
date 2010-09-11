@@ -11,6 +11,7 @@ module Ploc
       var :zero_or_one do
         sequence(separator: :comma) {identifier}
       end
+      optional { sequence(repeat: true) { procedure; identifier; semicolon; block; semicolon }}
       procedure :zero_or_more do
         sequence(terminator: :semicolon) {identifier; semicolon; block}
       end
@@ -34,7 +35,7 @@ module Ploc
       end
     end
     define :expression do
-      optional sign
+      optional { sign }
       sequence(separator: :sign) {term}
     end
     define :term do

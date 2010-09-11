@@ -89,7 +89,7 @@ describe Ploc::LanguageBuilder do
       errors.should_not be_empty
     end
   end
-  context 'Foo starter with bar' do
+  context 'Foo starter with baz terminator and bar' do
     before :each do
       @language = Ploc::Language.build do
         terminal :foo, ::String

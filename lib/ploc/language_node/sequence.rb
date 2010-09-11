@@ -45,7 +45,11 @@ module Ploc::LanguageNode
         last = separator_node.call(current, remaining)
         self.call(last,remaining)
       else
-        current
+        if @options[:repeat] && self.matches_first?(current)
+          self.call(last,remaining)
+        else
+          current
+        end
       end
     end
     def call_terminator(current, remaining)
@@ -53,8 +57,16 @@ module Ploc::LanguageNode
         if terminator_node.matches_first?(current)
           terminator_node.call(current, remaining)
         else
-          language.errors << "Expecting terminator #{terminator_node.inspect} but found #{current.inspect}"
-          current
+          if separator_node
+            language.errors << "Expecting separator #{separator_node.inspect} or terminator #{terminator_node.inspect} but found #{current.inspect}"
+          else
+            if matches_first?(current)
+              # Recursive call due to not founding terminator and still matches
+              self.call(current, remaining)
+            else
+              language.errors << "Expecting terminator #{terminator_node.inspect} but found #{current.inspect}"
+            end
+          end
         end
       else
         current
