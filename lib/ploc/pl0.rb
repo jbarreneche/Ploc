@@ -57,6 +57,7 @@ module Ploc
     term :sign, Token::Operand, *Token::Operand::SIGNS
     term :left_par, Token::Operand, Token::Operand::LEFT_PAR
     term :right_par, Token::Operand, Token::Operand::RIGHT_PAR
+    term :dot, Token::Operand, Token::Operand::DOT
     term :identifier, Token::Identifier
     term :number, Token::Number
   end
