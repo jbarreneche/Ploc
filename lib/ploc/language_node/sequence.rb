@@ -10,10 +10,14 @@ module Ploc::LanguageNode
     def call(current, remaining)
       last = call_sequence(current, remaining)
       last = call_separator(last, remaining)
+      last = call_terminator(last, remaining)
       last
     end
     def separator_node
       @separator_node ||= fetch_node(@options[:separator]) if @options[:separator]
+    end
+    def terminator_node
+      @terminator_node ||= fetch_node(@options[:terminator]) if @options[:terminator]
     end
     def matches_first?(token)
       sequence_nodes.first.matches_first?(token)
@@ -40,6 +44,18 @@ module Ploc::LanguageNode
       if separator_node && separator_node.matches_first?(current)
         last = separator_node.call(current, remaining)
         self.call(last,remaining)
+      else
+        current
+      end
+    end
+    def call_terminator(current, remaining)
+      if terminator_node 
+        if terminator_node.matches_first?(current)
+          terminator_node.call(current, remaining)
+        else
+          language.errors << "Expecting terminator #{terminator_node.inspect} but found #{current.inspect}"
+          current
+        end
       else
         current
       end

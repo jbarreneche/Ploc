@@ -1,15 +1,22 @@
 module Ploc::LanguageNode
   class ConstWithBlock < Base
     attr_accessor :const, :extra
-    def initialize(const, options = {}, &block)
+    def initialize(const, *options, &block)
       @block = block
-      @options = options
+      @options = *options
       self.const = const
       self.extra = sequence(&block)
     end
+    def optional?
+      @options.include? :zero_or_one
+    end
     def call(current, remaining)
-      last = const_node.call(current, remaining)
-      extra_node.call(last,remaining)
+      if optional? && !const_node.matches_first?(current)
+        current
+      else
+        last = const_node.call(current, remaining)
+        extra_node.call(last,remaining)
+      end
     end
     def const_node
       @const_node ||= fetch_node(const)

@@ -30,5 +30,8 @@ module Ploc::LanguageNode
         super
       end
     end
+    # def puts(*args)
+    #   ::Kernel.puts *args
+    # end
   end
 end

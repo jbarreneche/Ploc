@@ -39,6 +39,11 @@ describe Ploc::LanguageBuilder do
         end
       end
     end
+    it 'shouldn\'t parse a sequence without the item' do
+      enum = [nil].enum_for
+      errors = @language.validate(:main, enum)
+      errors.should_not be_empty
+    end
     it 'should parse a sequence with only one item' do
       enum = [1, nil].enum_for
       errors = @language.validate(:main, enum)
@@ -82,6 +87,27 @@ describe Ploc::LanguageBuilder do
       enum = [nil].enum_for
       errors = @language.validate(:main, enum)
       errors.should_not be_empty
+    end
+  end
+  context 'Foo starter with bar' do
+    before :each do
+      @language = Ploc::Language.build do
+        terminal :foo, ::String
+        terminal :bar, ::Fixnum
+        terminal :baz, ::Symbol
+        define :main do
+          foo(:zero_or_one) do
+            sequence(terminator: :baz) { main }
+          end
+          bar
+        end
+      end
+    end
+    it 'should support recursive definitions' do
+      enum = ['foo', 'foo', 1, :end, 1, :end, 1, nil].enum_for
+      errors = @language.validate(:main, enum)
+      puts errors
+      errors.should be_empty
     end
   end
 end
