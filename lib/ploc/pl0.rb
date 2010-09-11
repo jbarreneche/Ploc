@@ -1,6 +1,6 @@
-require 'ploc/language_builder'
+require 'ploc/language'
 module Ploc
-  PL0 = LanguageBuilder.new do
+  PL0 = Language.build do
     define :program do
       sequence { block; dot }
     end

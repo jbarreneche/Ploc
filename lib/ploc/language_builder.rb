@@ -3,7 +3,7 @@ require 'ploc/language_node'
 
 module Ploc
   class LanguageBuilder < BasicObject
-    def initialize(&block)
+    def initialize(*args, &block)
       raise 'Block expected' unless block
       @nodes = {}
       instance_eval(&block)
@@ -14,7 +14,7 @@ module Ploc
     def define(node_name, &block)
       @nodes[node_name] = LanguageNode::Sequence.new(&block)
     end
-    def method_missing(meth, *args)
+    def method_missing(meth, *args, &block)
       if @nodes.include? meth
         @nodes[meth]
       else

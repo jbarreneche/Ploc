@@ -5,12 +5,11 @@ module Ploc::LanguageNode
       @block = block
       @options = options
       @sequence = []
-      @lock = false
-      instance_eval(&block) if block
-      @lock = true
+      super
     end
     def call(current, remaining)
       last = sequence_nodes.inject(current) do |current, node|
+        node.language = self.language
         node.call(current, remaining)
       end
       if @options[:separator] && separator_node.matches_first?(last)
@@ -27,35 +26,25 @@ module Ploc::LanguageNode
     end
     def sequence_nodes
       @sequence_nodes ||= @sequence.map do |node_name| 
-        fetch_node(node_name)
+        node = fetch_node(node_name)
+        node.language = self.language
+        node
       end
     end
     def add_node(node)
       @sequence << node
+    end
+    def language=(language)
+      super
+      sequence_nodes
     end
     def sequence(*args, &block)
       @dont_add = true
       super
       @dont_add = false
     end
-    def fetch_node(node_name)
-      if Base === node_name
-        node_name.language = self.language
-        node_name
-      else
-        @language.nodes[node_name]
-      end
-    end
-    def method_missing(meth, *args)
-      unless @lock
-        add_node(meth) unless @dont_add
-        meth
-      else
-        super
-      end
-    end
     def inspect
-      "<Node sequence:#{@sequence.inspect} options:#{@options}>"
+      "<Node sequence:#{@sequence.inspect} options:#{@options} language:#{language.inspect}>"
     end
   end
 end

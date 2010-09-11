@@ -1,7 +1,11 @@
+require 'ploc/language_builder'
 module Ploc
   class Language
     attr_accessor :nodes
     attr_accessor :errors
+    def self.build(&block)
+      LanguageBuilder.new(&block).build
+    end
     def initialize(nodes_hash)
       @nodes = nodes_hash
       nodes_hash.each do |node_name,node|
