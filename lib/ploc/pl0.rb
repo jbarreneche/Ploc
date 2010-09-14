@@ -1,8 +1,9 @@
 require 'ploc/language'
+require 'ploc/token'
 module Ploc
   PL0 = Language.build do
     define :program do
-      sequence { block; dot }
+      block; dot
     end
     define :block do
       const :zero_or_one do
@@ -12,20 +13,19 @@ module Ploc
         sequence(separator: :comma) {identifier}
       end
       optional { sequence(repeat: true) { procedure; identifier; semicolon; block; semicolon }}
-      procedure :zero_or_more do
-        sequence(terminator: :semicolon) {identifier; semicolon; block}
-      end
       sentence
     end
     define :sentence do
-      branch :optional do
-        sequence { identifier; assign; expression}
-        sequence { call; identifier}
-        _begin do
-          sequence(separator: :semicolon, terminator: :_end) {sentence}
+      optional do
+        branch do
+          sequence { identifier; assign; expression}
+          sequence { _call; identifier }
+          _begin do
+            sequence(separator: :semicolon, terminator: :_end) {assign}
+          end
+          sequence {_if; condition; _then; sentence}
+          sequence {_while; condition; _do; sentence}
         end
-        sequence {_if; condition; _then; sentence}
-        sequence {_while; condition; _do; sentence}
       end
     end
     define :condition do
@@ -49,16 +49,24 @@ module Ploc
       end
     end
     Token::ReservedWord::ALL.each do |word|
-      term Token::ReservedWord.santize(word).to_sym, Token::ReservedWord, word
+      terminal Token::ReservedWord.sanitize(word).to_sym, Token::ReservedWord, word
     end
-    term :assign, Token::Operand, Token::Operand::SIGNS
-    term :bop, Token::Operand, *Token::Operand::BOPS
-    term :ration, Token::Operand, *Token::Operand::RATIONS
-    term :sign, Token::Operand, *Token::Operand::SIGNS
-    term :left_par, Token::Operand, Token::Operand::LEFT_PAR
-    term :right_par, Token::Operand, Token::Operand::RIGHT_PAR
-    term :dot, Token::Operand, Token::Operand::DOT
-    term :identifier, Token::Identifier
-    term :number, Token::Number
+    terminal :assign, Token::Operand, Token::Operand::ASSIGN
+    terminal :bop, Token::Operand, *Token::Operand::BOPS
+    terminal :equal, Token::Operand, Token::Operand::EQUAL
+    terminal :comma, Token::Operand, Token::Operand::COMMA_SEPARATOR
+    terminal :dot, Token::Operand, Token::Operand::DOT
+    terminal :identifier, Token::Identifier
+    terminal :left_par, Token::Operand, Token::Operand::LEFT_PAR
+    terminal :number, Token::Number
+    terminal :ration, Token::Operand, *Token::Operand::RATIONS
+    terminal :right_par, Token::Operand, Token::Operand::RIGHT_PAR
+    terminal :semicolon, Token::Operand, Token::Operand::SEMICOLON_SEPARATOR
+    terminal :sign, Token::Operand, *Token::Operand::SIGNS
   end
 end
+# require 'ploc/pl0'
+# require 'stringio'
+# require 'ploc/scanner'
+# program = Ploc::Scanner.new(StringIO.new('.'))
+# Ploc::PL0.validate(:program, program)         

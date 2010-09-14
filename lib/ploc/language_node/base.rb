@@ -5,6 +5,9 @@ module Ploc::LanguageNode
       instance_eval(&block) if block
       @initialization_finished = true
     end
+    def optional(*params, &block)
+      add_node(Optional.new(*params, &block))
+    end
     def sequence(*params, &block)
       add_node(Sequence.new(*params, &block))
     end
@@ -13,6 +16,7 @@ module Ploc::LanguageNode
     end
     def fetch_node(node_name)
       node = Base === node_name ? node_name : @language.nodes[node_name]
+      ::Kernel.raise "Node not found #{node_name}" unless node
       node.language = self.language
       node
     end

@@ -106,7 +106,29 @@ describe Ploc::LanguageBuilder do
     it 'should support recursive definitions' do
       enum = ['foo', 'foo', 1, :end, 1, :end, 1, nil].enum_for
       errors = @language.validate(:main, enum)
-      puts errors
+      errors.should be_empty
+    end
+  end
+  context 'Branching tokens' do
+    before :each do
+      @language = Ploc::Language.build do
+        terminal :foo, ::Fixnum
+        terminal :bar, ::String
+        terminal :baz, ::Symbol
+        define :main do
+          sequence(repeat: true) do
+            foo
+            branch do
+              baz
+              bar
+            end
+          end
+        end
+      end
+    end
+    it 'should support recursive definitions' do
+      enum = [1, 'string', 2, :symbol, nil].enum_for
+      errors = @language.validate(:main, enum)
       errors.should be_empty
     end
   end

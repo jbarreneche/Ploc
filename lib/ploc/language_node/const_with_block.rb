@@ -10,6 +10,9 @@ module Ploc::LanguageNode
     def optional?
       @options.include? :zero_or_one
     end
+    def matches_first?(node)
+      self.const_node.matches_first?(node)
+    end
     def call(current, remaining)
       if optional? && !const_node.matches_first?(current)
         current
@@ -25,7 +28,7 @@ module Ploc::LanguageNode
       @extra_node ||= fetch_node(extra)
     end
     def inspect
-      "<ConstWithBlock const:#{@const.inspect} sequence:#{@extra.inspect}>"
+      "<ConstWithBlock const:#{@const.inspect} sequence:#{@extra.inspect} optional?:#{optional?}>"
     end
   end
 end

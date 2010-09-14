@@ -46,7 +46,7 @@ module Ploc::LanguageNode
         self.call(last,remaining)
       else
         if @options[:repeat] && self.matches_first?(current)
-          self.call(last,remaining)
+          self.call(current,remaining)
         else
           current
         end

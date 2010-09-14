@@ -11,6 +11,7 @@ module Ploc
           tokens = next_line.scan /\d+|\w+|:=|\S/
           tokens.each {|token| g.yield parse_token(token) }
         end
+        g.yield(nil)
       end
     end
     def next

@@ -6,12 +6,15 @@ describe Ploc::Scanner do
   it 'should tokenize empty program' do
     scanner = Ploc::Scanner.new(StringIO.new("."))
     array = scanner.to_a
+    array.pop.should be_nil
     array.should have(1).token
-    array.map(&:to_s).first.should == '.'
+    array.first.to_s.should == '.'
   end
   it 'should tokenize text and symbols' do
     scanner = Ploc::Scanner.new(StringIO.new("    symbol := 23a;   \n\t  \t l3tt3randnumb3r:=3*(symbol + symbol)     "))
-    scanner.to_a.map(&:to_s).should == %w[symbol := 23 a ; l3tt3randnumb3r := 3 * ( symbol + symbol )]
+    array = scanner.to_a
+    array.pop.should be_nil
+    array.map(&:to_s).should == %w[symbol := 23 a ; l3tt3randnumb3r := 3 * ( symbol + symbol )]
   end
   it 'should tokenize iteratibely' do
     input = mock('input')

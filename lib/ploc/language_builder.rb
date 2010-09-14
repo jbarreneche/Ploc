@@ -8,8 +8,8 @@ module Ploc
       @nodes = {}
       instance_eval(&block)
     end
-    def terminal(node_name, matcher)
-      @nodes[node_name] = LanguageNode::Terminal.new(matcher)
+    def terminal(node_name, *args)
+      @nodes[node_name] = LanguageNode::Terminal.new(*args)
     end
     def define(node_name, &block)
       @nodes[node_name] = LanguageNode::Sequence.new(&block)

@@ -1,7 +1,7 @@
 module Ploc::Token
   class ReservedWord < Base
-    ALL = %w[const var procedure begin end if while]
-    RUBY_RESERVED_WORDS = %w[begin end if while]
+    ALL = %w[const var procedure begin end if while call then do odd]
+    RUBY_RESERVED_WORDS = %w[begin end if while call then do]
     def self.sanitize(string)
       return "_#{string}" if RUBY_RESERVED_WORDS.include? string
       string

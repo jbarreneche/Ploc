@@ -3,6 +3,7 @@ module Ploc::Token
     ASSIGN = ':='
     LEFT_PAR, RIGHT_PAR = %w[( )]
     PARENTHESIS = LEFT_PAR, RIGHT_PAR
+    EQUAL = '='
     BOPS = %w[= <> >= <= > <]
     SIGNS = %w[+ -]
     RATIONS = %w[* /]
