@@ -8,8 +8,7 @@ module Ploc::LanguageNode
       super
     end
     def call(current, remaining)
-      last = call_sequence(current, remaining)
-      last = call_separator(last, remaining)
+      last = recursive_call(current, remaining)
       last = call_terminator(last, remaining)
       last
     end
@@ -35,6 +34,10 @@ module Ploc::LanguageNode
       "<Node sequence:#{@sequence.inspect} options:#{@options}>"
     end
   private
+    def recursive_call(current, remaining)
+      last = call_sequence(current, remaining)
+      last = call_separator(last, remaining)
+    end
     def call_sequence(current, remaining)
       sequence_nodes.inject(current) do |current, node|
         node.call(current, remaining)
@@ -43,10 +46,10 @@ module Ploc::LanguageNode
     def call_separator(current, remaining)
       if separator_node && separator_node.matches_first?(current)
         last = separator_node.call(current, remaining)
-        self.call(last,remaining)
+        recursive_call(last,remaining)
       else
         if @options[:repeat] && self.matches_first?(current)
-          self.call(current,remaining)
+          recursive_call(current,remaining)
         else
           current
         end
@@ -58,11 +61,11 @@ module Ploc::LanguageNode
           terminator_node.call(current, remaining)
         else
           if separator_node
-            language.errors << "Expecting separator #{separator_node.inspect} or terminator #{terminator_node.inspect} but found #{current.inspect}"
+            language.errors << "#{self.inspect} Expecting separator #{separator_node.inspect} or terminator #{terminator_node.inspect} but found #{current.inspect}"
           else
             if matches_first?(current)
               # Recursive call due to not founding terminator and still matches
-              self.call(current, remaining)
+              recursive_call(current, remaining)
             else
               language.errors << "Expecting terminator #{terminator_node.inspect} but found #{current.inspect}"
             end
@@ -71,6 +74,9 @@ module Ploc::LanguageNode
       else
         current
       end
+    end
+    def puts(*args)
+      ::Kernel.puts *args
     end
   end
 end
