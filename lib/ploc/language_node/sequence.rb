@@ -2,8 +2,8 @@ module Ploc::LanguageNode
   class Sequence < Base
     attr_accessor :sequence_nodes
     def initialize(options = {}, &block)
-      @block = block
       @options = options
+      @options[:repeat] ||= !!(@options[:separator] || @options[:terminator])
       @sequence = []
       super
     end
@@ -12,19 +12,8 @@ module Ploc::LanguageNode
       last = call_terminator(last, remaining)
       last
     end
-    def separator_node
-      @separator_node ||= fetch_node(@options[:separator]) if @options[:separator]
-    end
-    def terminator_node
-      @terminator_node ||= fetch_node(@options[:terminator]) if @options[:terminator]
-    end
     def matches_first?(token)
       optional? || required_nodes.first.matches_first?(token)
-    end
-    def sequence_nodes
-      @sequence_nodes ||= @sequence.map do |node_name| 
-        fetch_node(node_name)
-      end
     end
     def add_node(node)
       @sequence << node
@@ -37,8 +26,28 @@ module Ploc::LanguageNode
       required_nodes.empty?
     end
   private
+    def separator_node
+      @separator_node ||= fetch_node(@options[:separator]) if @options[:separator]
+    end
+    def terminator_node
+      @terminator_node ||= fetch_node(@options[:terminator]) if @options[:terminator]
+    end
+    def sequence_nodes
+      @sequence_nodes ||= @sequence.map do |node_name| 
+        fetch_node(node_name)
+      end
+    end
+    def matches_separator?(token)
+      separator_node ? separator_node.matches_first?(token) : starting_nodes.any? {|m| m.matches_first? token }
+    end
     def required_nodes
       @required_nodes ||= sequence_nodes.select(&:required?)
+    end
+    def starting_nodes
+      @starting_nodes ||= sequence_nodes.first.required? ? 
+        [sequence_nodes.first] : 
+        # Starting nodes are the optionals plus the first required
+        sequence_nodes.slice_before(&:required?).take(2).flatten
     end
     def recursive_call(current, remaining)
       last = call_sequence(current, remaining)
@@ -50,15 +59,11 @@ module Ploc::LanguageNode
       end
     end
     def call_separator(current, remaining)
-      if separator_node && separator_node.matches_first?(current)
-        last = separator_node.call(current, remaining)
-        recursive_call(last,remaining)
+      if multiple_sequence? && matches_separator?(current)
+        last = (separator_node || Dummy.new).call(current, remaining)
+        recursive_call(last, remaining)
       else
-        if @options[:repeat] && matches_first?(current)
-          recursive_call(current,remaining)
-        else
-          current
-        end
+        current
       end
     end
     def call_terminator(current, remaining)
@@ -69,20 +74,18 @@ module Ploc::LanguageNode
           if separator_node
             language.errors << "#{self.inspect} Expecting separator #{separator_node.inspect} or terminator #{terminator_node.inspect} but found #{current.inspect}"
           else
-            if matches_first?(current)
-              # Recursive call due to not founding terminator and still matches
-              recursive_call(current, remaining)
-            else
-              language.errors << "Expecting terminator #{terminator_node.inspect} but found #{current.inspect}"
-            end
+            language.errors << "Expecting terminator #{terminator_node.inspect} or #{starting_nodes.inspect} but found #{current.inspect}"
           end
         end
       else
         current
       end
     end
-    def puts(*args)
-      ::Kernel.puts *args
+    def multiple_sequence?
+      @options[:repeat]
     end
+    # def puts(*args)
+    #   ::Kernel.puts *args
+    # end
   end
 end

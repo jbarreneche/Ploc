@@ -2,7 +2,6 @@ module Ploc::LanguageNode
   class ConstWithBlock < Base
     attr_accessor :const, :extra
     def initialize(const, *options, &block)
-      @block = block
       @options = *options
       self.const = const
       self.extra = sequence(&block)

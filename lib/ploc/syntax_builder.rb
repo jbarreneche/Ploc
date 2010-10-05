@@ -1,18 +1,21 @@
-require 'ploc/language'
+require 'ploc/syntax'
 require 'ploc/language_node'
 
 module Ploc
-  class LanguageBuilder < BasicObject
+  class SyntaxBuilder < BasicObject
+    def self.build(*args, &block)
+      new(*args, &block).build
+    end
     def initialize(*args, &block)
-      raise 'Block expected' unless block
+      ::Kernel.raise 'Block expected' unless block
       @nodes = {}
       instance_eval(&block)
     end
     def terminal(node_name, *args)
       @nodes[node_name] = LanguageNode::Terminal.new(*args)
     end
-    def define(node_name, &block)
-      @nodes[node_name] = LanguageNode::Sequence.new(&block)
+    def define(node_name, *args, &block)
+      @nodes[node_name] = LanguageNode::Sequence.new(*args, &block)
     end
     def method_missing(meth, *args, &block)
       if @nodes.include? meth
@@ -22,7 +25,7 @@ module Ploc
       end
     end
     def build
-      Language.new(@nodes)
+      Syntax.new(@nodes)
     end
     def to_s; 'Language Builder'; end
     def inspect; 'Language Builder'; end

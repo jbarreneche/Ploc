@@ -8,7 +8,7 @@ describe 'Pl0 compiler' do
       Ploc::Scanner.new(StringIO.new(string))
     end
     it 'should validate minimum syntax' do
-      errors = Ploc::PL0.validate_program program('.')
+      errors = Ploc::PL0_SYNTAX.parse_program program('.')
       errors.should be_empty
     end
     it 'should validate complex syntax too!!' do
@@ -25,7 +25,7 @@ describe 'Pl0 compiler' do
           writeln('NUM*2=',Y*X)
         end.
       SRC
-      errors = Ploc::PL0.validate_program(src)
+      errors = Ploc::PL0_SYNTAX.parse_program(src)
       errors.should be_empty
     end
   end

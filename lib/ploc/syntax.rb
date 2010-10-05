@@ -1,18 +1,18 @@
-require 'ploc/language_builder'
+require 'ploc/syntax_builder'
 module Ploc
-  class Language
+  class Syntax
     attr_accessor :nodes, :errors
     def self.build(&block)
-      LanguageBuilder.new(&block).build
+      SyntaxBuilder.build(&block)
     end
     def initialize(nodes_hash)
       @nodes = nodes_hash
-      nodes_hash.each do |node_name,node|
+      @nodes.each do |node_name,node|
         node.language = self
         define_singleton_method node_name do |*attributes, &block|
           node.call(*attributes, &block)
         end
-        define_singleton_method "validate_#{node_name}" do |*attributes, &block|
+        define_singleton_method "parse_#{node_name}" do |*attributes, &block|
           validate node_name, *attributes, &block
         end
       end

@@ -1,9 +1,9 @@
+require 'ploc/token_matcher'
 module Ploc::LanguageNode
   class Terminal < Base
     attr_reader :matcher
     def initialize(matcher, *symbols)
-      @matcher = matcher
-      @symbols = symbols.empty? ? false : symbols
+      @matcher = ::Ploc::TokenMatcher.new(matcher, *symbols)
     end
     def call(current, remaining)
       if matches_first?(current)
@@ -14,7 +14,7 @@ module Ploc::LanguageNode
       end
     end
     def matches_first?(token)
-      matcher === token && (!@symbols || @symbols.include?(token.to_s))
+      @matcher.matches?(token)
     end
     def inspect
       "<Node terminal:#{@matcher.inspect} #{@symbols ? @symbols.inspect : ''}>"

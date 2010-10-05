@@ -35,7 +35,6 @@ module Ploc::LanguageNode
       unless @initialization_finished
         node = block ? ConstWithBlock.new(meth, *args, &block) : meth 
         add_node(node)
-        node
       else
         super
       end

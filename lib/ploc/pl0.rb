@@ -1,17 +1,15 @@
-require 'ploc/language'
+require 'ploc/syntax'
 require 'ploc/token'
 module Ploc
-  PL0 = Language.build do
+  PL0_SYNTAX = Syntax.build do
     define :program do
       block; dot
     end
     define :block do
-      optional do
-        const
+      const :zero_or_one do
         sequence(separator: :comma, terminator: :semicolon) {identifier; equal; number}
       end
-      optional do
-        var
+      var :zero_or_one do
         sequence(separator: :comma, terminator: :semicolon) {identifier}
       end
       optional { sequence(repeat: true) { procedure; identifier; semicolon; block; semicolon }}
@@ -80,8 +78,3 @@ module Ploc
     terminal :sign, Token::Operand, *Token::Operand::SIGNS
   end
 end
-# require 'ploc/pl0'
-# require 'stringio'
-# require 'ploc/scanner'
-# program = Ploc::Scanner.new(StringIO.new('.'))
-# Ploc::PL0.validate(:program, program)         
