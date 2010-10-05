@@ -17,7 +17,7 @@ module Ploc::LanguageNode
       matcher === token && (!@symbols || @symbols.include?(token.to_s))
     end
     def inspect
-      "<Node terminal:#{@matcher.inspect}>"
+      "<Node terminal:#{@matcher.inspect} #{@symbols ? @symbols.inspect : ''}>"
     end
   end
 end
