@@ -126,7 +126,7 @@ describe Ploc::LanguageBuilder do
         end
       end
     end
-    it 'should support recursive definitions' do
+    it 'should support repeating sequence without separators' do
       enum = [1, 'string', 2, :symbol, nil].enum_for
       errors = @language.validate(:main, enum)
       errors.should be_empty

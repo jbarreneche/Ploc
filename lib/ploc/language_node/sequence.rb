@@ -19,7 +19,7 @@ module Ploc::LanguageNode
       @terminator_node ||= fetch_node(@options[:terminator]) if @options[:terminator]
     end
     def matches_first?(token)
-      sequence_nodes.first.matches_first?(token)
+      optional? || required_nodes.first.matches_first?(token)
     end
     def sequence_nodes
       @sequence_nodes ||= @sequence.map do |node_name| 
@@ -33,7 +33,13 @@ module Ploc::LanguageNode
     def inspect
       "<Node sequence:#{@sequence.inspect} options:#{@options}>"
     end
+    def optional?
+      required_nodes.empty?
+    end
   private
+    def required_nodes
+      @required_nodes ||= sequence_nodes.select(&:required?)
+    end
     def recursive_call(current, remaining)
       last = call_sequence(current, remaining)
       last = call_separator(last, remaining)
@@ -48,7 +54,7 @@ module Ploc::LanguageNode
         last = separator_node.call(current, remaining)
         recursive_call(last,remaining)
       else
-        if @options[:repeat] && self.matches_first?(current)
+        if @options[:repeat] && matches_first?(current)
           recursive_call(current,remaining)
         else
           current

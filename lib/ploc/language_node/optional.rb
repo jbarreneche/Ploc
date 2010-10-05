@@ -29,6 +29,9 @@ module Ploc::LanguageNode
     def inspect
       "<NodeOptional sequence:#{@sequence.inspect} options:#{@options}>"
     end
+    def optional?
+      true
+    end
   private
     def call_sequence(current, remaining)
       sequence_nodes.inject(current) do |current, node|

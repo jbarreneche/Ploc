@@ -21,11 +21,11 @@ describe Ploc::Scanner do
     input.should_receive(:gets).and_return('something blue')
     input.should_receive(:eof?).exactly(2).times.and_return(false)
     scanner = Ploc::Scanner.new(input)
-    scanner.next.should == 'something'
-    scanner.next.should == 'blue'
+    scanner.next.to_s.should == 'something'
+    scanner.next.to_s.should == 'blue'
     input.should_receive(:gets).and_return('anything black')
-    scanner.next.should == 'anything'
-    scanner.next.should == 'black'
+    scanner.next.to_s.should == 'anything'
+    scanner.next.to_s.should == 'black'
   end
   it 'should keep track of current line' do
     input = mock('input')
