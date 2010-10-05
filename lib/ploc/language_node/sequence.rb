@@ -60,7 +60,7 @@ module Ploc::LanguageNode
     end
     def call_separator(current, remaining)
       if multiple_sequence? && matches_separator?(current)
-        last = (separator_node || Dummy.new).call(current, remaining)
+        last = (separator_node || Null.new).call(current, remaining)
         recursive_call(last, remaining)
       else
         current

@@ -7,7 +7,7 @@ module Ploc::LanguageNode
       true
     end
     def inspect
-      "Dddddddd"
+      "<NullNode>"
     end
   end
 end
