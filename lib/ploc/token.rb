@@ -5,6 +5,8 @@ module Ploc
       case s
       when /^\d+$/
         Number.build(string)
+      when /^["']/
+        String.build(string)
       when /^\w+$/
         if ReservedWord::ALL.include?(s)
           ReservedWord.build(s)
@@ -27,4 +29,5 @@ require 'ploc/token/identifier'
 require 'ploc/token/number'
 require 'ploc/token/operand'
 require 'ploc/token/reserved_word'
+require 'ploc/token/string'
 require 'ploc/token/unknown'

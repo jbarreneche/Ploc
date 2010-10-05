@@ -12,6 +12,9 @@ module Ploc
         define_singleton_method node_name do |*attributes, &block|
           node.call(*attributes, &block)
         end
+        define_singleton_method "validate_#{node_name}" do |*attributes, &block|
+          validate node_name, *attributes, &block
+        end
       end
     end
     def validate(entry_point, tokens)

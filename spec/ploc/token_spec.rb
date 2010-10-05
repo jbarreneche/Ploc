@@ -21,4 +21,10 @@ describe Ploc::Token do
   it 'shouldn\'t recognize strange symbols' do
     Ploc::Token.tokenize('$').should be_a(Ploc::Token::Unknown)
   end
+  it 'should recognize strings' do
+    Ploc::Token.tokenize('"$"').should be_a(Ploc::Token::String)
+  end
+  it 'shouldn\'t recognize open strings' do
+    Ploc::Token.tokenize("\"$\n\n").should be_a(Ploc::Token::Unknown)
+  end
 end

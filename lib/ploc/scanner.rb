@@ -6,9 +6,11 @@ module Ploc
     def initialize(input)
       @input = input
       @line_number = 0
+      string = lambda {|sep| "#{sep}[^#{sep}]*#{sep}|#{sep}[^#{sep}]*$"}
+      regex = /#{string["'"]}|#{string['"']}|\d+|\w+|:=|\S/
       @tokenizer = Enumerator.new do |g|
         while !input.eof? do
-          tokens = next_line.scan /\d+|\w+|:=|\S/
+          tokens = next_line.scan(regex)
           tokens.each {|token| g.yield parse_token(token) }
         end
         g.yield(nil)

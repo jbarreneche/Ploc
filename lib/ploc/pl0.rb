@@ -6,11 +6,13 @@ module Ploc
       block; dot
     end
     define :block do
-      const :zero_or_one do
-        sequence(separator: :comma) {identifier; equal; number}
+      optional do
+        const
+        sequence(separator: :comma, terminator: :semicolon) {identifier; equal; number}
       end
-      var :zero_or_one do
-        sequence(separator: :comma) {identifier}
+      optional do
+        var
+        sequence(separator: :comma, terminator: :semicolon) {identifier}
       end
       optional { sequence(repeat: true) { procedure; identifier; semicolon; block; semicolon }}
       sentence
@@ -21,12 +23,24 @@ module Ploc
           sequence { identifier; assign; expression}
           sequence { _call; identifier }
           _begin do
-            sequence(separator: :semicolon, terminator: :_end) {assign}
+            sequence(separator: :semicolon, terminator: :_end) {sentence}
           end
           sequence {_if; condition; _then; sentence}
           sequence {_while; condition; _do; sentence}
+          sequence do 
+            output; left_par
+            sequence(separator: :comma) { output_expression }
+            right_par
+          end
+          sequence { readln; left_par; identifier; right_par }
         end
       end
+    end
+    define :output do
+      branch { write; writeln }
+    end
+    define :output_expression do
+      branch { string; expression }
     end
     define :condition do
       branch do
@@ -51,6 +65,7 @@ module Ploc
     Token::ReservedWord::ALL.each do |word|
       terminal Token::ReservedWord.sanitize(word).to_sym, Token::ReservedWord, word
     end
+    terminal :string, Token::String
     terminal :assign, Token::Operand, Token::Operand::ASSIGN
     terminal :bop, Token::Operand, *Token::Operand::BOPS
     terminal :equal, Token::Operand, Token::Operand::EQUAL
