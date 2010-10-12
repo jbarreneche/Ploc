@@ -1,6 +1,5 @@
 module Ploc::LanguageNode
   class Branch < Base
-    attr_accessor :sequence_nodes
     def initialize(options = {}, &block)
       @options = options
       @branches = []

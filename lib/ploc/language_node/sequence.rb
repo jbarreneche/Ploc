@@ -1,6 +1,5 @@
 module Ploc::LanguageNode
   class Sequence < Base
-    attr_accessor :sequence_nodes
     def initialize(options = {}, &block)
       @options = options
       @options[:repeat] ||= !!(@options[:separator] || @options[:terminator])
