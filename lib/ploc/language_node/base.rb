@@ -15,7 +15,7 @@ module Ploc::LanguageNode
       add_node(Branch.new(*params, &block))
     end
     def fetch_node(node_name)
-      node = Base === node_name ? node_name : @language.nodes[node_name]
+      node = ::Symbol === node_name ? @language.nodes[node_name] : node_name
       ::Kernel.raise "Node not found #{node_name}" unless node
       node.language = self.language
       node
