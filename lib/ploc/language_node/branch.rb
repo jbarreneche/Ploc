@@ -10,7 +10,7 @@ module Ploc::LanguageNode
       if node
         node.call(current, remaining)
       else
-        language.errors << "Expecting any of #{branch_nodes.inspect} but found #{current}"
+        language.errors << "Expecting any of #{branch_nodes.inspect} but found #{current.inspect}"
         current
       end
     end
