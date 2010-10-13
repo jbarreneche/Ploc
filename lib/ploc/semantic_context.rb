@@ -1,19 +1,38 @@
+require 'ploc/constant'
+require 'ploc/procedure'
+require 'ploc/variable'
+
 module Ploc
   class SemanticContext
+    attr_reader :scope
     def initialize
-      @current_scope = Scope.new
+      @scope = Scope.new(self)
+      @var_sequence = -1
     end
     def constants
-      @current_scope.constants
+      @scope.constants
     end
     def variables
-      @current_scope.variables
+      @scope.variables
     end
     def procedures
-      @current_scope.procedures
+      @scope.procedures
     end
-    def declare(type, name)
-      @current_scope.declare(type, name)
+    def declare(type, name, *args)
+      @scope.declare(type, name, *args)
+    end
+    def build_variable(name)
+      Variable.new name, next_var_sequence
+    end
+    def build_constant(name, value)
+      Constant.new name, value
+    end
+    def build_procedure(name, address)
+      Procedure.new name, address
+    end
+  private
+    def next_var_sequence
+      @var_sequence += 1
     end
   end
 end

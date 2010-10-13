@@ -2,15 +2,28 @@ require 'spec_helper'
 require 'ploc/scope'
 
 describe Ploc::Scope do
+  let(:context) { double('Context') }
+  subject { Ploc::Scope.new(context) }
+  
   it { should have(0).constants }
   it { should have(0).variables }
   it { should have(0).procedures }
   it { subject.parent.should be_nil }
+  before(:each) do
+    context.stub(:build_variable) {|v| v }
+    context.stub(:build_constant) {|c| c }
+    context.stub(:build_procedure) {|p| p }
+  end
   context 'declaring variables' do
     it 'should allow to declare variables' do
       foo_var = subject.declare(:variable, :foo)
       subject.should have(1).variables
       subject.variables.should include(foo_var)
+    end
+    it 'should build variables from context' do
+      foo_var = mock('FooVar')
+      context.should_receive(:build_variable).with(:foo).and_return(foo_var)
+      subject.declare(:variable, :foo).should == foo_var
     end
     it 'should\'nt allow to declare already declared variables' do
       foo_var = subject.declare(:variable, :foo)
@@ -25,6 +38,11 @@ describe Ploc::Scope do
       subject.should have(1).constants
       subject.constants.should include(foo_cons)
     end
+    it 'should build constants from context' do
+      foo_cons = mock('FooCons')
+      context.should_receive(:build_constant).with(:foo).and_return(foo_cons)
+      subject.declare(:constant, :foo).should == foo_cons
+    end
     it 'should\'nt allow to declare already declared variables' do
       foo_cons = subject.declare(:constant, :foo)
       lambda {
@@ -37,6 +55,11 @@ describe Ploc::Scope do
       foo_proc = subject.declare(:procedure, :foo)
       subject.should have(1).procedures
       subject.procedures.should include(foo_proc)
+    end
+    it 'should build procedures from context' do
+      foo_proc = mock('FooProc')
+      context.should_receive(:build_procedure).with(:foo).and_return(foo_proc)
+      subject.declare(:procedures, :foo).should == foo_proc
     end
     it 'should\'nt allow to declare already declared procedures' do
       foo_proc = subject.declare(:procedure, :foo)

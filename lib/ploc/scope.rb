@@ -1,7 +1,9 @@
 module Ploc
   class DuplicateDeclarationError < StandardError; end
   class Scope
-    def initialize(parent = nil)
+    attr_reader :context
+    def initialize(context, parent = nil)
+      @context = context
       @parent = parent
       @local_declarations_hash = {constants:[], variables: [], procedures: []}
     end
@@ -17,31 +19,27 @@ module Ploc
     def parent
       @parent
     end
-    def declare(type, value)
-      raise DuplicateDeclarationError if local_declarations.include? value
+    def declare(type, name, *args)
+      raise DuplicateDeclarationError if local_declarations.include? name
       case type
       when :variable
-        declare_variable(value)
+        context.build_variable(name, *args).tap do |variable|
+          local_variables << variable
+        end
       when :constant
-        declare_constant(value)
+        context.build_constant(name, *args).tap do |constant|
+          local_constants << constant
+        end
       else
-        declare_procedure(value)
+        context.build_procedure(name, *args).tap do |procedure|
+          local_procedures << procedure
+        end
       end
-      value
     end
     def build_subcontext
-      Scope.new(self)
+      Scope.new(context, self)
     end
   private
-    def declare_variable(value)
-      local_variables << value
-    end
-    def declare_constant(value)
-      local_constants << value
-    end
-    def declare_procedure(value)
-      local_procedures << value
-    end
     def local_variables
       local_declarations_hash[:variables]
     end
