@@ -1,7 +1,11 @@
+require 'ploc/callbackable'
+
 module Ploc::LanguageNode
   class Base < BasicObject
     attr_accessor :language
+    include ::Ploc::Callbackable
     def initialize(*args, &block)
+      super
       instance_eval(&block) if block
       @initialization_finished = true
     end
@@ -20,7 +24,10 @@ module Ploc::LanguageNode
       node.language = self.language
       node
     end
-    
+    def call_with_callbacks(current, remaining)
+      _run_callbacks(current) { self.call_without_callbacks(current, remaining) }
+    end
+    alias :call :call_with_callbacks
     # Subclasses should override if they want to have the nodes used
     def add_node(node)
       node

@@ -6,7 +6,7 @@ module Ploc::LanguageNode
       @sequence = []
       super
     end
-    def call(current, remaining)
+    def call_without_callbacks(current, remaining)
       last = recursive_call(current, remaining)
       last = call_terminator(last, remaining)
       last

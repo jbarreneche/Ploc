@@ -2,6 +2,7 @@ module Ploc::LanguageNode
   class ConstWithBlock < Base
     attr_accessor :const, :extra
     def initialize(const, *options, &block)
+      super
       @options = *options
       self.const = const
       self.extra = sequence(&block)
@@ -12,7 +13,7 @@ module Ploc::LanguageNode
     def matches_first?(node)
       self.const_node.matches_first?(node)
     end
-    def call(current, remaining)
+    def call_without_callbacks(current, remaining)
       if optional? && !const_node.matches_first?(current)
         current
       else

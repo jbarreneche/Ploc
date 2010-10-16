@@ -3,9 +3,10 @@ module Ploc::LanguageNode
   class Terminal < Base
     attr_reader :matcher
     def initialize(matcher, *symbols)
+      super
       @matcher = ::Ploc::TokenMatcher.new(matcher, *symbols)
     end
-    def call(current, remaining)
+    def call_without_callbacks(current, remaining)
       if matches_first?(current)
         remaining.next
       else

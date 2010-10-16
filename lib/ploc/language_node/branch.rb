@@ -5,7 +5,7 @@ module Ploc::LanguageNode
       @branches = []
       super
     end
-    def call(current, remaining)
+    def call_without_callbacks(current, remaining)
       node = branch_nodes.detect {|node| node.matches_first?(current) }
       if node
         node.call(current, remaining)
