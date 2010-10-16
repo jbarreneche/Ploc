@@ -17,6 +17,9 @@ module Ploc
         end
       end
     end
+    def parse(entry_point, compiler)
+      send(entry_point, compiler.next_token, compiler)
+    end
     def validate(entry_point, tokens)
       @errors = []
       last_token = send(entry_point, tokens.next, tokens)

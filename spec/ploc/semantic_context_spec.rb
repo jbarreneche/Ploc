@@ -5,7 +5,7 @@ describe Ploc::SemanticContext do
   it { should have(0).constants }
   it { should have(0).variables }
   it { should have(0).procedures }
-  its("scope") { should == subject }
+
   describe 'Building variables' do
     it 'should allow to declare new variables' do
       var_foo = subject.declare(:variable, :foo)

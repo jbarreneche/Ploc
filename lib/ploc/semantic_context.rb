@@ -1,5 +1,6 @@
 require 'ploc/constant'
 require 'ploc/procedure'
+require 'ploc/scope'
 require 'ploc/variable'
 
 module Ploc

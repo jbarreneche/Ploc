@@ -31,6 +31,7 @@ module Ploc::LanguageNode
     def required?
       !optional?
     end
+  private
     def method_missing(meth, *args, &block)
       unless @initialization_finished
         node = block ? ConstWithBlock.new(meth, *args, &block) : meth 
