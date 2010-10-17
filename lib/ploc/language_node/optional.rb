@@ -7,9 +7,9 @@ module Ploc::LanguageNode
       @sequence = []
       super
     end
-    def call_without_callbacks(current, remaining)
+    def call_without_callbacks(current, source_code)
       if matches_first?(current)
-        call_sequence(current, remaining)
+        call_sequence(current, source_code)
       else
         current
       end

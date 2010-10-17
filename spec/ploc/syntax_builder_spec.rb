@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'ploc/syntax'
+require 'ploc/source_code'
 
 describe Ploc::SyntaxBuilder do
   context 'Foo bar syntax' do
@@ -14,17 +15,17 @@ describe Ploc::SyntaxBuilder do
       end
     end
     it 'should parse valid construction' do
-      enum = [1, 's', nil].enum_for
+      enum = program(1, 's')
       errors = @syntax.validate(:main, enum)
       errors.should be_empty
     end
     it 'should register invalid construction' do
-      enum = [1, 2, nil].enum_for
+      enum = program(1, 2)
       errors = @syntax.validate(:main, enum)
       errors.should_not be_empty
     end
     it 'should register garbage' do
-      enum = [1, '2', 'nil'].enum_for
+      enum = program(1, '2', 'nil')
       errors = @syntax.validate(:main, enum)
       errors.should_not be_empty
     end
@@ -40,27 +41,27 @@ describe Ploc::SyntaxBuilder do
       end
     end
     it 'shouldn\'t parse a sequence without the item' do
-      enum = [nil].enum_for
+      enum = program()
       errors = @syntax.validate(:main, enum)
       errors.should_not be_empty
     end
     it 'should parse a sequence with only one item' do
-      enum = [1, nil].enum_for
+      enum = program(1)
       errors = @syntax.validate(:main, enum)
       errors.should be_empty
     end
     it 'should parse a sequence with multiple items with the separator' do
-      enum = [1, '1', 2, nil].enum_for
+      enum = program(1, '1', 2)
       errors = @syntax.validate(:main, enum)
       errors.should be_empty
     end
     it 'shouldn\'t parse a sequence wich ends with the separator' do
-      enum = [1, '1', nil].enum_for
+      enum = program(1, '1')
       errors = @syntax.validate(:main, enum)
       errors.should_not be_empty
     end
     it 'shouldn\'t parse a sequence without the expected separator' do
-      enum = [1, 1, nil].enum_for
+      enum = program(1, 1)
       errors = @syntax.validate(:main, enum)
       errors.should_not be_empty
     end
@@ -79,12 +80,12 @@ describe Ploc::SyntaxBuilder do
       end
     end
     it 'should parse a sequence nested in a constant' do
-      enum = [1, '1', 1.2, '3', nil].enum_for
+      enum = program(1, '1', 1.2, '3')
       errors = @syntax.validate(:main, enum)
       errors.should be_empty
     end
     it 'shouldn\'t parse a sequence which doesn\'t start with the constant' do
-      enum = [nil].enum_for
+      enum = program()
       errors = @syntax.validate(:main, enum)
       errors.should_not be_empty
     end
@@ -104,7 +105,7 @@ describe Ploc::SyntaxBuilder do
       end
     end
     it 'should support recursive definitions' do
-      enum = ['foo', 'foo', 1, :end, 1, :end, 1, nil].enum_for
+      enum = program('foo', 'foo', 1, :end, 1, :end, 1)
       errors = @syntax.validate(:main, enum)
       errors.should be_empty
     end
@@ -127,9 +128,12 @@ describe Ploc::SyntaxBuilder do
       end
     end
     it 'should support repeating sequence without separators' do
-      enum = [1, 'string', 2, :symbol, nil].enum_for
+      enum = program(1, 'string', 2, :symbol)
       errors = @syntax.validate(:main, enum)
       errors.should be_empty
     end
+  end
+  def program(*data)
+    Ploc::SourceCode.new((data << nil).enum_for)
   end
 end

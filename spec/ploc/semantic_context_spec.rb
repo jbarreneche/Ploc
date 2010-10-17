@@ -2,6 +2,8 @@ require 'spec_helper'
 require 'ploc/semantic_context'
 
 describe Ploc::SemanticContext do
+  let(:context) { stub('Context').as_null_object }
+  subject { Ploc::SemanticContext.new(context) }
   it { should have(0).constants }
   it { should have(0).variables }
   it { should have(0).procedures }

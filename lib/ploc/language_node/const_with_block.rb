@@ -13,12 +13,12 @@ module Ploc::LanguageNode
     def matches_first?(node)
       self.const_node.matches_first?(node)
     end
-    def call_without_callbacks(current, remaining)
+    def call_without_callbacks(current, source_code)
       if optional? && !const_node.matches_first?(current)
         current
       else
-        last = const_node.call(current, remaining)
-        extra_node.call(last,remaining)
+        last = const_node.call(current, source_code)
+        extra_node.call(last, source_code)
       end
     end
     def const_node

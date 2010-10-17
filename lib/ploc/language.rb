@@ -1,22 +1,23 @@
-require 'ploc/dummy_compiler'
+require 'ploc/source_code'
+require 'ploc/validation_context'
 
 module Ploc
   class Language
-    attr_accessor :parser, :scanner_builder, :compiler_builder
+    attr_accessor :parser, :scanner_builder, :context_builder
 
     def initialize(attrs = {})
       self.parser ||= attrs[:parser]
       self.scanner_builder ||= attrs[:scanner_builder]
-      self.compiler_builder ||= attrs[:compiler_builder]
+      self.context_builder ||= attrs[:context_builder]
     end
     def compile(program)
-      new_compiler(scan(program)).tap do |compiler|
-        self.parser.parse :program, compiler
+      new_compiling_context(program).tap do |compiler|
+        self.parser.parse :program, compiler.source_code
       end
     end
     def parse(program)
-      new_dummy_compiler(scan(program)).tap do |compiler|
-        self.parser.parse :program, compiler
+      new_validation_context(program).tap do |compiler|
+        self.parser.parse :program, compiler.source_code
       end.errors
     end
     def scan(program)
@@ -24,11 +25,14 @@ module Ploc
     end
 
   private
-    def new_compiler(scanner)
-      self.compiler_builder.call(scanner)
+    def new_compiling_context(program)
+      self.context_builder.call(new_source_code(program))
     end
-    def new_dummy_compiler(scanner)
-      Ploc::DummyCompiler.new(scanner)
+    def new_validation_context(program)
+      ValidationContext.new(new_source_code(program))
+    end
+    def new_source_code(program)
+      SourceCode.new(scan(program))
     end
   end
 end

@@ -1,8 +1,10 @@
 module Ploc
-  class Compiler < Struct.new(:scanner, :context)
+  class SourceCode < Struct.new(:scanner)
 
     attr_reader :current_token
     attr_reader :errors
+    attr_accessor :compiling_context
+
     def initialize(*args)
       super
       @errors = []
@@ -11,6 +13,5 @@ module Ploc
     def next_token
       @current_token =  scanner.next
     end
-    alias :next :next_token
   end
 end

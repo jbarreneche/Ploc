@@ -1,12 +1,12 @@
 require 'spec_helper'
-require 'ploc/dummy_compiler'
+require 'ploc/source_code'
 require 'ploc/pl0/syntax'
 require 'ploc/pl0/scanner'
 
 module Ploc::PL0
   describe Syntax do
     def program(string)
-      Ploc::DummyCompiler.new(Scanner.new(StringIO.new(string)))
+      Ploc::SourceCode.new(Scanner.new(StringIO.new(string)))
     end
     it 'should validate minimum syntax' do
       errors = Syntax.parse_program program('.')

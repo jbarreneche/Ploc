@@ -6,9 +6,9 @@ module Ploc::LanguageNode
       @sequence = []
       super
     end
-    def call_without_callbacks(current, remaining)
-      last = recursive_call(current, remaining)
-      last = call_terminator(last, remaining)
+    def call_without_callbacks(current, source_code)
+      last = recursive_call(current, source_code)
+      last = call_terminator(last, source_code)
       last
     end
     def matches_first?(token)
@@ -48,32 +48,32 @@ module Ploc::LanguageNode
         # Starting nodes are the optionals plus the first required
         sequence_nodes.slice_before(&:required?).take(2).flatten
     end
-    def recursive_call(current, remaining)
-      last = call_sequence(current, remaining)
-      last = call_separator(last, remaining)
+    def recursive_call(current, source_code)
+      last = call_sequence(current, source_code)
+      last = call_separator(last, source_code)
     end
-    def call_sequence(current, remaining)
+    def call_sequence(current, source_code)
       sequence_nodes.inject(current) do |current, node|
-        node.call(current, remaining)
+        node.call(current, source_code)
       end
     end
-    def call_separator(current, remaining)
+    def call_separator(current, source_code)
       if multiple_sequence? && matches_separator?(current)
-        last = (separator_node || Null.new).call(current, remaining)
-        recursive_call(last, remaining)
+        last = (separator_node || Null.new).call(current, source_code)
+        recursive_call(last, source_code)
       else
         current
       end
     end
-    def call_terminator(current, remaining)
+    def call_terminator(current, source_code)
       if terminator_node 
         if terminator_node.matches_first?(current)
-          terminator_node.call(current, remaining)
+          terminator_node.call(current, source_code)
         else
           if separator_node
-            language.errors << "#{self.inspect} Expecting separator #{separator_node.inspect} or terminator #{terminator_node.inspect} but found #{current.inspect}"
+            source_code.errors << "#{self.inspect} Expecting separator #{separator_node.inspect} or terminator #{terminator_node.inspect} but found #{current.inspect}"
           else
-            language.errors << "Expecting terminator #{terminator_node.inspect} or #{starting_nodes.inspect} but found #{current.inspect}"
+            source_code.errors << "Expecting terminator #{terminator_node.inspect} or #{starting_nodes.inspect} but found #{current.inspect}"
           end
         end
       else
