@@ -27,7 +27,5 @@ module Ploc
     def build
       Syntax.new(@nodes)
     end
-    def to_s; 'Language Builder'; end
-    def inspect; 'Language Builder'; end
   end
 end

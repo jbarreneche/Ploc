@@ -78,4 +78,5 @@ module Ploc::PL0
     terminal :semicolon, ::Ploc::Token::Operand, ::Ploc::Token::Operand::SEMICOLON_SEPARATOR
     terminal :sign, ::Ploc::Token::Operand, *::Ploc::Token::Operand::SIGNS
   end
+  def Syntax.to_s; "Ploc::PL0::Syntax"; end
 end

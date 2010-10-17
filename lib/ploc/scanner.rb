@@ -1,13 +1,16 @@
 require 'ploc/token'
+require 'forwardable'
 
 module Ploc
   class Scanner
+    extend Forwardable
+
     attr_reader :line_number, :current_line
-    def initialize(input)
+    def_delegators :@tokenizer, :next, :to_a
+
+    def initialize(input, regex)
       @input = input
       @line_number = 0
-      string_regex = lambda {|sep| "#{sep}[^#{sep}]*#{sep}|#{sep}[^#{sep}]*$"}
-      regex = /#{string_regex["'"]}|#{string_regex['"']}|\d+|\w+|:=|\S/
       @tokenizer = Enumerator.new do |g|
         while !input.eof? do
           tokens = next_line.scan(regex)
@@ -16,12 +19,7 @@ module Ploc
         g.yield(nil)
       end
     end
-    def next
-      @tokenizer.next
-    end
-    def to_a
-      @tokenizer.to_a
-    end
+
   private
     def next_line
       @line_number += 1

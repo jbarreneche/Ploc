@@ -1,3 +1,5 @@
+require 'ploc/token/unknown'
+
 module Ploc::Token
   class Number < Base
     MAX_INT = (2 ** 31)

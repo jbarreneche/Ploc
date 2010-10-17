@@ -1,3 +1,5 @@
+require 'ploc/token/unknown'
+
 module Ploc::Token
   class String < Base
     def self.build(string)
