@@ -27,9 +27,9 @@ describe Ploc::Scope do
     end
     it 'should\'nt allow to declare already declared variables' do
       foo_var = subject.declare(:variable, :foo)
-      lambda {
+      expect {
         subject.declare(:variable, :foo)
-      }.should raise_error(Ploc::DuplicateDeclarationError)
+      }.to raise_error(Ploc::DuplicateDeclarationError)
     end
   end
   context 'declaring constants' do
@@ -45,9 +45,9 @@ describe Ploc::Scope do
     end
     it 'should\'nt allow to declare already declared variables' do
       foo_cons = subject.declare(:constant, :foo)
-      lambda {
+      expect {
         subject.declare(:constant, :foo)
-      }.should raise_error(Ploc::DuplicateDeclarationError)
+      }.to raise_error(Ploc::DuplicateDeclarationError)
     end
   end
   context 'declaring procedures' do
@@ -63,9 +63,9 @@ describe Ploc::Scope do
     end
     it 'should\'nt allow to declare already declared procedures' do
       foo_proc = subject.declare(:procedure, :foo)
-      lambda {
+      expect {
         subject.declare(:procedure, :foo)
-      }.should raise_error(Ploc::DuplicateDeclarationError)
+      }.to raise_error(Ploc::DuplicateDeclarationError)
     end
   end
   context 'nesting scopes' do
