@@ -3,7 +3,7 @@ module Ploc
 
     attr_reader :current_token
     attr_reader :errors
-    attr_accessor :compiling_context
+    attr_accessor :context
 
     def initialize(*args)
       super

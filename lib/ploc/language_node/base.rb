@@ -24,8 +24,8 @@ module Ploc::LanguageNode
       node.language = self.language
       node
     end
-    def call_with_callbacks(current, remaining)
-      _run_callbacks(current) { self.call_without_callbacks(current, remaining) }
+    def call_with_callbacks(current, source_code)
+      _run_callbacks(current, source_code) { self.call_without_callbacks(current, source_code) }
     end
     alias :call :call_with_callbacks
     # Subclasses should override if they want to have the nodes used

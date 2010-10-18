@@ -17,6 +17,15 @@ module Ploc
         end
       end
     end
+    def before(node, &block)
+      @nodes[node].add_before_callback(&block)
+    end
+    def after(node, &block)
+      @nodes[node].add_after_callback(&block)
+    end
+    def around(node, &block)
+      @nodes[node].add_around_callback(&block)
+    end
     def parse(entry_point, source_code)
       last_token = send(entry_point, source_code.next_token, source_code)
       source_code.errors << "Garbage found #{last_token.inspect}" if last_token

@@ -5,10 +5,12 @@ require 'ploc/variable'
 
 module Ploc
   class SemanticContext
-    attr_reader :scope, :source_code
+    attr_reader :scope
+    attr_accessor :source_code
     def initialize(source_code = nil)
       @source_code = source_code
-      @source_code.context = self
+      # FIXME tests de semantic rules
+      @source_code ? @source_code.context=(self) : nil
       @scope = Scope.new(self)
       @var_sequence = -1
     end

@@ -5,8 +5,11 @@ require 'ploc/pl0/scanner'
 
 module Ploc::PL0
   describe Syntax do
+    let(:context) { stub(:context).as_null_object }
     def program(string)
-      Ploc::SourceCode.new(Scanner.new(StringIO.new(string)))
+      Ploc::SourceCode.new(Scanner.new(StringIO.new(string))).tap do |sc|
+        sc.context= context
+      end
     end
     it 'should validate minimum syntax' do
       errors = Syntax.parse_program program('.')
