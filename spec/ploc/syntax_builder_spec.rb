@@ -73,9 +73,8 @@ describe Ploc::SyntaxBuilder do
         terminal :bar, ::String
         terminal :baz, ::Float
         define :main do
-          foo do
-            sequence(separator: :baz) { bar }
-          end
+          foo
+          sequence(separator: :baz) { bar }
         end
       end
     end
@@ -97,11 +96,10 @@ describe Ploc::SyntaxBuilder do
         terminal :bar, ::Fixnum
         terminal :baz, ::Symbol
         define :main do
-          foo(:zero_or_one) do
-            sequence(terminator: :baz) { main }
-          end
+          optional { foo; main_sequence}
           bar
         end
+        define(:main_sequence, terminator: :baz)  { main }
       end
     end
     it 'should support recursive definitions' do

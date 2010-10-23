@@ -7,23 +7,23 @@ module Ploc::PL0
       block; dot
     end
     define :block do
-      const :zero_or_one do
-        sequence(separator: :comma, terminator: :semicolon) {identifier; equal; number}
-      end
-      var :zero_or_one do
-        sequence(separator: :comma, terminator: :semicolon) {identifier}
-      end
+      optional { const; declare_constants }
+      optional { var; declare_variables }
       optional { sequence(repeat: true) { procedure; identifier; semicolon; block; semicolon }}
       sentence
+    end
+    define :declare_constants, separator: :comma, terminator: :semicolon do
+      identifier; equal; number
+    end
+    define :declare_variables, separator: :comma, terminator: :semicolon do
+      identifier
     end
     define :sentence do
       optional do
         branch do
           sequence { identifier; assign; expression}
           sequence { _call; identifier }
-          _begin do
-            sequence(separator: :semicolon, terminator: :_end) {sentence}
-          end
+          sequence { _begin; multiple_sentences; _end }
           sequence {_if; condition; _then; sentence}
           sequence {_while; condition; _do; sentence}
           sequence do 
@@ -35,6 +35,8 @@ module Ploc::PL0
         end
       end
     end
+    define(:multiple_sentences, separator: :semicolon) { sentence }
+
     define :output do
       branch { write; writeln }
     end

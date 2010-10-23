@@ -41,8 +41,7 @@ module Ploc::LanguageNode
   private
     def method_missing(meth, *args, &block)
       unless @initialization_finished
-        node = block ? ConstWithBlock.new(meth, *args, &block) : meth 
-        add_node(node)
+        add_node(meth)
       else
         super
       end
