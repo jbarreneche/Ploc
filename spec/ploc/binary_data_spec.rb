@@ -22,9 +22,9 @@ describe Ploc::BinaryData do
     stream.string.should == "abcd"
   end
   it 'should parse int into little? endian format' do
-    Ploc::BinaryData.parse_int(3).to_s.should == "\x3\0\0\0"
+    Ploc::BinaryData.new(3).to_s.should == "\x3\0\0\0"
   end
   it 'should parse negatives int into little? endian format' do
-    Ploc::BinaryData.parse_int(-1).to_s.should == "\xff\xff\xff\xff"
+    Ploc::BinaryData.new(-1).to_s.should == "\xff\xff\xff\xff"
   end
 end
