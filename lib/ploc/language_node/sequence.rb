@@ -4,6 +4,7 @@ module Ploc::LanguageNode
       @options = options
       @options[:repeat] ||= !!(@options[:separator] || @options[:terminator])
       @sequence = []
+      @after_each_callbacks = []
       super
     end
     def call_without_callbacks(source_code)
@@ -23,6 +24,9 @@ module Ploc::LanguageNode
     end
     def optional?
       required_nodes.empty?
+    end
+    def add_after_each_callback(&block)
+      @after_each_callbacks << block
     end
   private
     def separator_node
@@ -53,9 +57,11 @@ module Ploc::LanguageNode
       separate_and_repeat(source_code, transversed_tokens.concat(new_sequence_tokens))
     end
     def call_sequence(source_code)
-      sequence_nodes.inject([]) do |sequence_tokens, node|
-        sequence_tokens << node.call(source_code)
-      end.compact
+      _run_sequence_callbacks(source_code) do |source_code|
+        sequence_nodes.inject([]) do |sequence_tokens, node|
+          sequence_tokens << node.call(source_code)
+        end.compact
+      end
     end
     def separate_and_repeat(source_code, transversed_tokens)
       if multiple_sequence? && matches_separator?(source_code.current_token)
@@ -88,6 +94,11 @@ module Ploc::LanguageNode
     end
     def multiple_sequence?
       @options[:repeat]
+    end
+    def _run_sequence_callbacks(*args, &block)
+      block.call(*args).tap do |result|
+        @after_each_callbacks.each {|cb| cb.call(result, *args)}
+      end
     end
     # def puts(*args)
     #   ::Kernel.puts *args

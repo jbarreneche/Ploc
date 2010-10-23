@@ -19,21 +19,19 @@ module Ploc::PL0
     end
     describe "Declaring constants" do
       it 'should allow to declare one constant' do
-        pending
-        @context.should_receive(:declare_constant).with("V", 3)
+        # pending
+        @context.should_receive(:declare_constant).with(identifier("V"), number(3))
         Language.compile StringIO.new("CONST V = 3.")
       end
       it 'should allow to declare multiple constants' do
-        pending
-        @context.should_receive(:declare_constant).with("V", 3).ordered
-        @context.should_receive(:declare_constant).with("W", 5).ordered
+        @context.should_receive(:declare_constant).with(identifier("V"), number(3)).ordered
+        @context.should_receive(:declare_constant).with(identifier("W"), number(5)).ordered
         Language.compile StringIO.new("CONST V = 3, W = 5.")
       end
     end
     describe "Declaring variables" do
       it 'should allow to declare one variable' do
-        pending
-        @context.should_receive(:declare_variable).with("V")
+        @context.should_receive(:declare_variable).with(identifier("V"))
         Language.compile StringIO.new("VAR V.")
       end
       it 'should allow to declare multiple variables' do
@@ -49,6 +47,12 @@ module Ploc::PL0
         @context.should_receive(:declare_procedure).with("P")
         Language.compile StringIO.new("PROCEDURE P;;.")
       end
+    end
+    def identifier(v)
+      Ploc::Token::Identifier.new v
+    end
+    def number(n)
+      Ploc::Token::Number.new n
     end
   end
 end
