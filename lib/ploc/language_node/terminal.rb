@@ -7,12 +7,14 @@ module Ploc::LanguageNode
       @matcher = ::Ploc::TokenMatcher.new(matcher, *symbols)
       super
     end
-    def call_without_callbacks(current, source_code)
-      if matches_first?(current)
+    def call_without_callbacks(source_code)
+      if matches_first?(source_code.current_token)
+        current = source_code.current_token
         source_code.next_token
-      else
-        source_code.errors << "Expecting: #{self.matcher.inspect} but found unexpected Symbol (#{current.inspect})" 
         current
+      else
+        source_code.errors << "Expecting: #{self.matcher.inspect} but found unexpected Symbol (#{source_code.current_token.inspect})" 
+        nil
       end
     end
     def matches_first?(token)

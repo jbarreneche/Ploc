@@ -7,11 +7,11 @@ module Ploc::LanguageNode
       @sequence = []
       super
     end
-    def call_without_callbacks(current, source_code)
-      if matches_first?(current)
-        call_sequence(current, source_code)
+    def call_without_callbacks(source_code)
+      if matches_first?(source_code.current_token)
+        call_sequence(source_code)
       else
-        current
+        nil
       end
     end
     def matches_first?(token)
@@ -33,10 +33,10 @@ module Ploc::LanguageNode
       true
     end
   private
-    def call_sequence(current, remaining)
-      sequence_nodes.inject(current) do |current, node|
-        node.call(current, remaining)
-      end
+    def call_sequence(source_code)
+      sequence_nodes.inject([]) do |sequence_tokens, node|
+        sequence_tokens << node.call(source_code)
+      end.compact
     end
   end
 end

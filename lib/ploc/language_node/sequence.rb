@@ -6,10 +6,10 @@ module Ploc::LanguageNode
       @sequence = []
       super
     end
-    def call_without_callbacks(current, source_code)
-      last = recursive_call(current, source_code)
-      last = call_terminator(last, source_code)
-      last
+    def call_without_callbacks(source_code)
+      transversed_tokens = recursive_call(source_code)
+      call_terminator(source_code)
+      transversed_tokens
     end
     def matches_first?(token)
       optional? || required_nodes.first.matches_first?(token)
@@ -48,40 +48,42 @@ module Ploc::LanguageNode
         # Starting nodes are the optionals plus the first required
         sequence_nodes.slice_before(&:required?).take(2).flatten
     end
-    def recursive_call(current, source_code)
-      last = call_sequence(current, source_code)
-      last = call_separator(last, source_code)
+    def recursive_call(source_code, transversed_tokens = [])
+      new_sequence_tokens = call_sequence(source_code)
+      separate_and_repeat(source_code, transversed_tokens.concat(new_sequence_tokens))
     end
-    def call_sequence(current, source_code)
-      sequence_nodes.inject(current) do |current, node|
-        node.call(current, source_code)
-      end
+    def call_sequence(source_code)
+      sequence_nodes.inject([]) do |sequence_tokens, node|
+        sequence_tokens << node.call(source_code)
+      end.compact
     end
-    def call_separator(current, source_code)
-      if multiple_sequence? && matches_separator?(current)
-        last = (separator_node || Null.new).call(current, source_code)
-        recursive_call(last, source_code)
+    def separate_and_repeat(source_code, transversed_tokens)
+      if multiple_sequence? && matches_separator?(source_code.current_token)
+        separator_node.call(source_code) if separator_node
+        recursive_call(source_code, transversed_tokens)
       else
-        current
+        transversed_tokens
       end
     end
-    def call_terminator(current, source_code)
+    def call_terminator(source_code)
       last_node = terminator_node || Null.new
-      if last_node.matches_first?(current)
-        last_node.call(current, source_code)
+      if last_node.matches_first?(source_code.current_token)
+        last_node.call(source_code)
       else
-        report_invalid_sequence_ending(current, source_code)
-        current
+        report_invalid_sequence_ending(source_code)
+        nil
       end
     end
-    def report_invalid_sequence_ending(current, source_code)
+    def report_invalid_sequence_ending(source_code)
       case
       when separator_node && terminator_node
-        source_code.errors << "Expecting separator #{separator_node.inspect} or terminator #{terminator_node.inspect} but found #{current.inspect}"
+        source_code.errors << "Expecting separator #{separator_node.inspect} or terminator #{terminator_node.inspect} but found #{source_code.current_token.inspect}"
       when separator_node
-        source_code.errors << "Expecting separator #{separator_node.inspect} but found #{current.inspect}"
+        source_code.errors << "Expecting separator #{separator_node.inspect} but found #{source_code.current_token.inspect}"
       when terminator_node
-        source_code.errors << "Expecting terminator #{terminator_node.inspect} or #{starting_nodes.inspect} but found #{current.inspect}"
+        source_code.errors << "Expecting terminator #{terminator_node.inspect} or #{starting_nodes.inspect} but found #{source_code.current_token.inspect}"
+      else
+        nil
       end
     end
     def multiple_sequence?

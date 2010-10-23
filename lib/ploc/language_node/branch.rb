@@ -5,13 +5,13 @@ module Ploc::LanguageNode
       @branches = []
       super
     end
-    def call_without_callbacks(current, source_code)
-      node = branch_nodes.detect {|node| node.matches_first?(current) }
+    def call_without_callbacks(source_code)
+      node = branch_nodes.detect {|node| node.matches_first?(source_code.current_token) }
       if node
-        node.call(current, source_code)
+        node.call(source_code)
       else
         source_code.errors << "Expecting any of #{branch_nodes.inspect} but found #{current.inspect}"
-        current
+        nil
       end
     end
     def matches_first?(token)

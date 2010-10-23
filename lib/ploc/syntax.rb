@@ -26,9 +26,14 @@ module Ploc
     def around(node, &block)
       @nodes[node].add_around_callback(&block)
     end
+    def after_each(node, &block)
+      raise "Not a sequence node!!" unless Ploc::LanguageNode::Sequence === @nodes[node]
+      @nodes[node].add_after_each_callback(&block)
+    end
     def parse(entry_point, source_code)
-      last_token = send(entry_point, source_code.next_token, source_code)
-      source_code.errors << "Garbage found #{last_token.inspect}" if last_token
+      source_code.next_token
+      send(entry_point, source_code)
+      source_code.errors << "Garbage found #{source_code.current_token.inspect}" if source_code.current_token
       source_code.errors.empty?
     end
     def validate(entry_point, source_code)

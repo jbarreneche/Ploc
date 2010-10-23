@@ -1,7 +1,7 @@
 module Ploc::LanguageNode
   class Null < Base
-    def call_without_callbacks(current, source_code)
-      current
+    def call_without_callbacks(source_code)
+      nil
     end
     def matches_first?(token)
       true
