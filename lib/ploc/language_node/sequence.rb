@@ -66,18 +66,22 @@ module Ploc::LanguageNode
       end
     end
     def call_terminator(current, source_code)
-      if terminator_node 
-        if terminator_node.matches_first?(current)
-          terminator_node.call(current, source_code)
-        else
-          if separator_node
-            source_code.errors << "#{self.inspect} Expecting separator #{separator_node.inspect} or terminator #{terminator_node.inspect} but found #{current.inspect}"
-          else
-            source_code.errors << "Expecting terminator #{terminator_node.inspect} or #{starting_nodes.inspect} but found #{current.inspect}"
-          end
-        end
+      last_node = terminator_node || Null.new
+      if last_node.matches_first?(current)
+        last_node.call(current, source_code)
       else
+        report_invalid_sequence_ending(current, source_code)
         current
+      end
+    end
+    def report_invalid_sequence_ending(current, source_code)
+      case
+      when separator_node && terminator_node
+        source_code.errors << "Expecting separator #{separator_node.inspect} or terminator #{terminator_node.inspect} but found #{current.inspect}"
+      when separator_node
+        source_code.errors << "Expecting separator #{separator_node.inspect} but found #{current.inspect}"
+      when terminator_node
+        source_code.errors << "Expecting terminator #{terminator_node.inspect} or #{starting_nodes.inspect} but found #{current.inspect}"
       end
     end
     def multiple_sequence?
