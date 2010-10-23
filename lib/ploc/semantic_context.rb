@@ -25,6 +25,8 @@ module Ploc
     end
     def declare(type, name, *args)
       @scope.declare(type, name, *args)
+    rescue Ploc::DuplicateDeclarationError
+      self.source_code.errors << "Already declared #{name}"
     end
     def build_variable(name)
       Variable.new name, next_var_sequence
