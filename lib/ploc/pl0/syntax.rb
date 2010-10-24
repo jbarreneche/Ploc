@@ -9,7 +9,11 @@ module Ploc::PL0
     define :block do
       optional { const; declare_constants }
       optional { var; declare_variables }
-      optional { sequence(repeat: true) { procedure; identifier; semicolon; block; semicolon }}
+      optional(repeat: true, name: :declare_procedure) do 
+        procedure; identifier; semicolon
+        block
+        semicolon
+      end
       sentence
     end
     define :declare_constants, separator: :comma, terminator: :semicolon do

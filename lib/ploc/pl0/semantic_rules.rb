@@ -19,5 +19,15 @@ module Ploc::PL0
       variable_name, _ = sequence_tokens
       source_code.context.declare_variable(variable_name)
     end
+    Syntax.after_each(:declare_procedure) do |sequence_tokens, source_code|
+      _, procedure_name = sequence_tokens
+      source_code.context.declare_procedure(procedure_name)
+    end
+    Syntax.after(:ration) do |operand, source_code|
+      source_code.context.push_operand operand
+    end
+    Syntax.after(:sign) do |operand, source_code|
+      source_code.context.push_operand operand
+    end
   end
 end

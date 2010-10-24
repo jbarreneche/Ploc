@@ -1,9 +1,9 @@
 module Ploc::LanguageNode
   class Branch < Base
-    def initialize(options = {}, &block)
+    def initialize(language, options = {}, &block)
       @options = options
       @branches = []
-      super
+      super(language, &block)
     end
     def call_without_callbacks(source_code)
       node = branch_nodes.detect {|node| node.matches_first?(source_code.current_token) }
@@ -17,8 +17,8 @@ module Ploc::LanguageNode
     def matches_first?(token)
       branch_nodes.any?{|node| node.matches_first?(token)}
     end
-    def add_node(node)
-      @branches << node
+    def add_node(name, node)
+      @branches << super
       node
     end
     def branch_nodes

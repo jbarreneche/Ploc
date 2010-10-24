@@ -28,6 +28,11 @@ module Ploc
     rescue Ploc::DuplicateDeclarationError
       self.source_code.errors << "Already declared #{name}"
     end
+    [:constant, :variable, :procedure].each do |type|
+      define_method :"declare_#{type}" do |name, *args|
+        declare(type, name, *args)
+      end
+    end
     def build_variable(name)
       Variable.new name, next_var_sequence
     end

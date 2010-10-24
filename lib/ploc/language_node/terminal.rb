@@ -3,9 +3,9 @@ require 'ploc/token_matcher'
 module Ploc::LanguageNode
   class Terminal < Base
     attr_reader :matcher
-    def initialize(matcher, *symbols)
+    def initialize(language, matcher, *symbols, &block)
       @matcher = ::Ploc::TokenMatcher.new(matcher, *symbols)
-      super
+      super(language, &block)
     end
     def call_without_callbacks(source_code)
       if matches_first?(source_code.current_token)

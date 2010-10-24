@@ -35,24 +35,31 @@ module Ploc::PL0
         Language.compile StringIO.new("VAR V.")
       end
       it 'should allow to declare multiple variables' do
-        pending
-        @context.should_receive(:declare_variable).with("V").ordered
-        @context.should_receive(:declare_variable).with("W").ordered
-        Language.compile StringIO.new("CONST V, W.")
+        @context.should_receive(:declare_variable).with(identifier("V")).ordered
+        @context.should_receive(:declare_variable).with(identifier("W")).ordered
+        Language.compile StringIO.new("VAR V, W.")
       end
     end
     describe "Declaring procedures" do
       it 'should allow to declare one procedure' do
-        pending
-        @context.should_receive(:declare_procedure).with("P")
+        @context.should_receive(:declare_procedure).with(identifier("P"))
         Language.compile StringIO.new("PROCEDURE P;;.")
       end
+    end
+    it "should push operands in expressions" do
+      @context.should_receive(:push_operand).with(operand("*")).ordered
+      @context.should_receive(:push_operand).with(operand("+")).ordered
+      @context.should_receive(:push_operand).with(operand("*")).ordered
+      Language.compile StringIO.new("Write(3 * 2 + 5 * 8).")
     end
     def identifier(v)
       Ploc::Token::Identifier.new v
     end
     def number(n)
       Ploc::Token::Number.new n
+    end
+    def operand(op)
+      Ploc::Token::Operand.new op
     end
   end
 end

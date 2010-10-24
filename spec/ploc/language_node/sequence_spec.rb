@@ -8,25 +8,22 @@ module Ploc::LanguageNode
       Ploc::SourceCode.new(array.push(nil).enum_for)
     end
     before(:each) do
-      @term = Terminal.new String, 't'
-      @sep  = Terminal.new String, 's'
-      @smtg = Terminal.new String, *(0..9).map(&:to_s)
       @language = Object.new
+      @term = Terminal.new @language, String, 't'
+      @sep  = Terminal.new @language, String, 's'
+      @smtg = Terminal.new @language, String, *(0..9).map(&:to_s)
       @language.stub('nodes').and_return(term: @term, smtg: @smtg, sep: @sep)
     end
     it 'should repeat correctly until separator' do
-      seq_node = Sequence.new(terminator: :term) { smtg }
-      seq_node.language = @language
+      seq_node = Sequence.new(@language, terminator: :term) { smtg }
 
       tokens = input_sequence(%w[1 2 3 4 5 6 7 8 9 t])
       tokens.next_token
       tokens.should_not_receive(:errors)
       seq_node.call(tokens).should == %w[1 2 3 4 5 6 7 8 9]
-
     end
     it 'should repeat the sequence while there are separators' do
-      seq_node = Sequence.new(separator: :sep) { smtg }
-      seq_node.language = @language
+      seq_node = Sequence.new(@language, separator: :sep) { smtg }
 
       tokens = input_sequence(%w[1 s 1 s 1 s 1 s 1 s 1 s 1 s 1 s 1])
       tokens.next_token
@@ -35,8 +32,7 @@ module Ploc::LanguageNode
 
     end
     it 'should repeat correctly with separators until separator' do
-      seq_node = Sequence.new(separator: :sep, terminator: :term) { smtg }
-      seq_node.language = @language
+      seq_node = Sequence.new(@language, separator: :sep, terminator: :term) { smtg }
 
       tokens = input_sequence(%w[1 s 1 s 1 s 1 s 1 s 1 s 1 s 1 s 1 t])
       tokens.next_token

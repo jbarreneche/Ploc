@@ -1,11 +1,11 @@
 module Ploc::LanguageNode
   class Sequence < Base
-    def initialize(options = {}, &block)
+    def initialize(language, options = {}, &block)
       @options = options
       @options[:repeat] ||= !!(@options[:separator] || @options[:terminator])
       @sequence = []
       @after_each_callbacks = []
-      super
+      super(language, &block)
     end
     def call_without_callbacks(source_code)
       transversed_tokens = recursive_call(source_code)
@@ -15,8 +15,8 @@ module Ploc::LanguageNode
     def matches_first?(token)
       optional? || required_nodes.first.matches_first?(token)
     end
-    def add_node(node)
-      @sequence << node
+    def add_node(name, node)
+      @sequence << super
       node
     end
     def inspect
@@ -72,7 +72,7 @@ module Ploc::LanguageNode
       end
     end
     def call_terminator(source_code)
-      last_node = terminator_node || Null.new
+      last_node = terminator_node || Null.new(self.language)
       if last_node.matches_first?(source_code.current_token)
         last_node.call(source_code)
       else
