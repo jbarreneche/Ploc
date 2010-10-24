@@ -29,5 +29,11 @@ module Ploc::PL0
     Syntax.after(:sign) do |operand, source_code|
       source_code.context.push_operand operand
     end
+    Syntax.after(:factor) do |factor, source_code|
+      factor = factor.first
+      context = source_code.context
+      context.compile_mov_eax(factor.token)
+      context.compile_push_eax
+    end
   end
 end

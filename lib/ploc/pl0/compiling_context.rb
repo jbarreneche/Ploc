@@ -18,5 +18,11 @@ module Ploc::PL0
     end
     def complete_program(*args)
     end
+    def compile_mov_eax(number)
+      self.output << Ploc::BinaryData.new("B8", number).to_s
+    end
+    def compile_push_eax
+      self.output << Ploc::BinaryData.new("50").to_s
+    end
   end
 end

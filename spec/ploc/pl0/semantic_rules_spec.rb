@@ -21,23 +21,23 @@ module Ploc::PL0
       it 'should allow to declare one constant' do
         # pending
         @context.should_receive(:declare_constant).with(identifier("V"), number(3))
-        Language.compile StringIO.new("CONST V = 3.")
+        Language.compile StringIO.new("CONST V = 3;.")
       end
       it 'should allow to declare multiple constants' do
         @context.should_receive(:declare_constant).with(identifier("V"), number(3)).ordered
         @context.should_receive(:declare_constant).with(identifier("W"), number(5)).ordered
-        Language.compile StringIO.new("CONST V = 3, W = 5.")
+        Language.compile StringIO.new("CONST V = 3, W = 5;.")
       end
     end
     describe "Declaring variables" do
       it 'should allow to declare one variable' do
         @context.should_receive(:declare_variable).with(identifier("V"))
-        Language.compile StringIO.new("VAR V.")
+        Language.compile StringIO.new("VAR V;.")
       end
       it 'should allow to declare multiple variables' do
         @context.should_receive(:declare_variable).with(identifier("V")).ordered
         @context.should_receive(:declare_variable).with(identifier("W")).ordered
-        Language.compile StringIO.new("VAR V, W.")
+        Language.compile StringIO.new("VAR V, W;.")
       end
     end
     describe "Declaring procedures" do
@@ -49,8 +49,16 @@ module Ploc::PL0
     it "should push operands in expressions" do
       @context.should_receive(:push_operand).with(operand("*")).ordered
       @context.should_receive(:push_operand).with(operand("+")).ordered
-      @context.should_receive(:push_operand).with(operand("*")).ordered
-      Language.compile StringIO.new("Write(3 * 2 + 5 * 8).")
+      @context.should_receive(:push_operand).with(operand("/")).ordered
+      Language.compile StringIO.new("Write(3 * 2 + 5 / 8).")
+    end
+    describe 'after factor' do
+      describe 'when factor was a number'
+        it 'should push it to the stack' do
+          @context.should_receive(:compile_mov_eax).with(3)
+          @context.should_receive(:compile_push_eax)
+          Language.compile StringIO.new("VAR X; X := 3.")
+        end
     end
     def identifier(v)
       Ploc::Token::Identifier.new v
