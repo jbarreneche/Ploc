@@ -27,4 +27,7 @@ describe Ploc::BinaryData do
   it 'should parse negatives int into little? endian format' do
     Ploc::BinaryData.new(-1).to_s.should == "\xff\xff\xff\xff"
   end
+  it 'should parse multiples arguments' do
+    Ploc::BinaryData.new("B8", -1).to_s.should == "\xB8\xff\xff\xff\xff"
+  end
 end

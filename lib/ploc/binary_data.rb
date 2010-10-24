@@ -3,15 +3,17 @@ module Ploc
     attr_reader :data
     alias :to_s :data
     INT_CONVERSION = 2 ** 32
-    def initialize(value)
-      @data = case value
-      when String
-        self.class.parse_string(value)
-      when Fixnum
-        self.class.parse_int(value)
-      else
-        ""
-      end
+    def initialize(*values)
+      @data = values.map do |value|
+        case value
+        when String
+          self.class.parse_string(value)
+        when Fixnum
+          self.class.parse_int(value)
+        else
+          ""
+        end
+      end.join
     end
     def self.parse_string(string)
       string.gsub(/#.*$/,'').split.map {|s| s.to_i(16).chr }.join
