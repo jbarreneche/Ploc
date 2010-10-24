@@ -1,5 +1,5 @@
 require 'ploc/pl0/syntax'
-
+require 'ploc/token'
 module Ploc::PL0
   module SemanticRules
     def self.debug(text)
@@ -13,7 +13,7 @@ module Ploc::PL0
     end
     Syntax.after_each(:declare_constants) do |sequence_tokens, source_code|
       constant_name, _, value = sequence_tokens
-      source_code.context.declare_constant(constant_name, value)
+      source_code.context.declare_constant(constant_name, value.to_i)
     end
     Syntax.after_each(:declare_variables) do |sequence_tokens, source_code|
       variable_name, _ = sequence_tokens
@@ -32,8 +32,15 @@ module Ploc::PL0
     Syntax.after(:factor) do |factor, source_code|
       factor = factor.first
       context = source_code.context
-      context.compile_mov_eax(factor.token)
-      context.compile_push_eax
+      case factor
+      when Ploc::Token::Number
+        context.compile_mov_eax(factor.token)
+        context.compile_push_eax
+      when Ploc::Token::Identifier
+        constant = context.retrieve_constant(factor.token)
+        context.compile_mov_eax(constant.value)
+        context.compile_push_eax
+      end
     end
   end
 end

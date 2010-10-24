@@ -31,6 +31,10 @@ describe Ploc::Scope do
         subject.declare(:variable, :foo)
       }.to raise_error(Ploc::DuplicateDeclarationError)
     end
+    it 'should allow to retrieve declared variables' do
+      foo_var = subject.declare(:variable, :foo)
+      subject.retrieve_variable(:foo).should == foo_var
+    end
   end
   context 'declaring constants' do
     it 'should allow to declare variables' do

@@ -1,5 +1,6 @@
 module Ploc
   class DuplicateDeclarationError < StandardError; end
+  class UndeclaredIdentifierError < StandardError; end
   class Scope
     attr_reader :context
     def initialize(context, parent = nil)
@@ -36,8 +37,21 @@ module Ploc
         end
       end
     end
+    def retrieve_variable(name)
+      retrieve_from_local(name, :variables)
+    end
+    def retrieve_constant(name)
+      retrieve_from_local(name, :constants)
+    end
     def build_subcontext
       Scope.new(context, self)
+    end
+  protected
+    def retrieve_from_local(name, *types)
+      name = name.to_sym
+      local = types.map {|type| local_declarations_hash[type] }.flatten.detect {|ident| ident == name }
+      parent = @parent.retrieve_from_local(name, *types) if !local && @parent
+      local || parent or raise UndeclaredIdentifierError.new
     end
   private
     def local_variables

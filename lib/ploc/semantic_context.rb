@@ -14,6 +14,20 @@ module Ploc
       @scope = Scope.new(self)
       @var_sequence = -1
     end
+    def retrieve_constant_or_variable(name)
+      @scope.retrieve_constant_or_variable(name)
+    rescue Ploc::UndeclaredIdentifierError
+      self.source_code.errors << "Undeclared constant or variable #{name}"
+      # Declare something just to keep the workflow going on
+      declare_variable(name)
+    end
+    def retrieve_constant(name)
+      @scope.retrieve_constant(name)
+    rescue Ploc::UndeclaredIdentifierError
+      self.source_code.errors << "Undeclared constant #{name}"
+      # Declare something just to keep the workflow going on
+      declare_constant(name, 0)
+    end
     def constants
       @scope.constants
     end

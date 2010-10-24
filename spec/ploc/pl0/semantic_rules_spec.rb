@@ -20,12 +20,12 @@ module Ploc::PL0
     describe "Declaring constants" do
       it 'should allow to declare one constant' do
         # pending
-        @context.should_receive(:declare_constant).with(identifier("V"), number(3))
+        @context.should_receive(:declare_constant).with(identifier("V"), 3)
         Language.compile StringIO.new("CONST V = 3;.")
       end
       it 'should allow to declare multiple constants' do
-        @context.should_receive(:declare_constant).with(identifier("V"), number(3)).ordered
-        @context.should_receive(:declare_constant).with(identifier("W"), number(5)).ordered
+        @context.should_receive(:declare_constant).with(identifier("V"), 3).ordered
+        @context.should_receive(:declare_constant).with(identifier("W"), 5).ordered
         Language.compile StringIO.new("CONST V = 3, W = 5;.")
       end
     end
@@ -53,12 +53,20 @@ module Ploc::PL0
       Language.compile StringIO.new("Write(3 * 2 + 5 / 8).")
     end
     describe 'after factor' do
-      describe 'when factor was a number'
+      describe 'when factor was a number' do
         it 'should push it to the stack' do
           @context.should_receive(:compile_mov_eax).with(3)
           @context.should_receive(:compile_push_eax)
           Language.compile StringIO.new("VAR X; X := 3.")
         end
+      end
+      describe 'when factor was a constant' do
+        it 'should push the constant value' do
+          @context.should_receive(:compile_mov_eax).with(3)
+          @context.should_receive(:compile_push_eax)
+          Language.compile StringIO.new("CONST Z = 3; VAR X; X := Z.")
+        end
+      end
     end
     def identifier(v)
       Ploc::Token::Identifier.new v
