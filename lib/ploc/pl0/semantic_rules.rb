@@ -37,9 +37,15 @@ module Ploc::PL0
         context.compile_mov_eax(factor.token)
         context.compile_push_eax
       when Ploc::Token::Identifier
-        constant = context.retrieve_constant(factor.token)
-        context.compile_mov_eax(constant.value)
+        identifier = context.retrieve_constant_or_variable(factor.token)
+        context.compile_mov_eax(identifier)
         context.compile_push_eax
+      end
+    end
+    Syntax.after_each(:term) do |_, source_code|
+      context = source_code.context
+      if context.top_operand && Ploc::Token::Operand::RATIONS.include?(context.top_operand.token)
+        context.compile_term_operation(context.pop_operand)
       end
     end
   end

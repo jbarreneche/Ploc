@@ -12,5 +12,9 @@ module Ploc
     def to_bin
       @bin_value ||= BinaryData.new(self.value).to_s
     end
+    def ==(o)
+      return self.value == o.value if self.class === o
+      super
+    end
   end
 end

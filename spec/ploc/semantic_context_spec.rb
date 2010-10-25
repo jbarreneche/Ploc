@@ -17,7 +17,7 @@ describe Ploc::SemanticContext do
     it 'should keep track of variable declaration' do
       var_foo = mock('Variable')
       subject.should_receive(:next_var_sequence) { 23 }
-      Ploc::Variable.should_receive(:new).with(:foo, 23).and_return(var_foo)
+      Ploc::Variable.should_receive(:new).with(:foo, Ploc::Address.new(23 * 4)).and_return(var_foo)
       
       subject.declare(:variable, :foo).should == var_foo
     end

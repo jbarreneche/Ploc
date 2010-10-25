@@ -1,3 +1,4 @@
+require 'ploc/address'
 require 'ploc/constant'
 require 'ploc/procedure'
 require 'ploc/scope'
@@ -48,7 +49,7 @@ module Ploc
       end
     end
     def build_variable(name)
-      Variable.new name, next_var_sequence
+      Variable.new name, next_var_address
     end
     def build_constant(name, value)
       Constant.new name, value
@@ -57,6 +58,9 @@ module Ploc
       Procedure.new name, address
     end
   private
+    def next_var_address
+      Address.new next_var_sequence * 4
+    end
     def next_var_sequence
       @var_sequence += 1
     end

@@ -57,9 +57,9 @@ module Ploc::PL0
       optional { sign }
       sequence(separator: :sign) {term}
     end
-    define :term do
-      sequence(separator: :ration) {factor}
-    end
+
+    define(:term, separator: :ration) {factor}
+
     define :factor do
       branch do
         identifier

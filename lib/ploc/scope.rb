@@ -43,6 +43,9 @@ module Ploc
     def retrieve_constant(name)
       retrieve_from_local(name, :constants)
     end
+    def retrieve_constant_or_variable(name)
+      retrieve_from_local(name, :constants, :variables)
+    end
     def build_subcontext
       Scope.new(context, self)
     end
