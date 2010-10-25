@@ -68,5 +68,10 @@ module Ploc::PL0
       assigned_variable = context.retrieve_variable(assigned_var_token.token)
       context.compile_assign_var_with_stack(assigned_variable)
     end
+    Syntax.after(:call_procedure) do |(call, procedure_identifier), source_code|
+      context = source_code.context
+      procedure = context.retrieve_procedure(procedure_identifier.token)
+      context.compile_call_procedure(procedure)
+    end
   end
 end

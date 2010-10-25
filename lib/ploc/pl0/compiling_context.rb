@@ -16,19 +16,19 @@ module Ploc::PL0
       @operands = []
       @text_output_size = 0
     end
-    def initialize_new_program!(*args)
+    def initialize_new_program!
       self.output << Ploc::BinaryData.new(File.read('support/elf_header'))
     end
-    def complete_program(*args)
+    def complete_program
     end
     def compile_mov_eax(value)
       case value
       when Fixnum
-        self.output << Ploc::BinaryData.new("B8", value).to_s
+        self.output_to_text_section Ploc::BinaryData.new("B8", value).to_s
       when Ploc::Constant
         self.compile_mov_eax(value.value)
       when Ploc::Variable
-        self.output << Ploc::BinaryData.new("8B 87", value.offset.value).to_s
+        self.output_to_text_section Ploc::BinaryData.new("8B 87", value.offset.value).to_s
       end
     end
     def starting_text_address

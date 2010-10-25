@@ -15,6 +15,12 @@ module Ploc
       @scope = Scope.new(self)
       @var_sequence = -1
     end
+    def start_new_scope
+      @scope = @scope.build_subcontext
+    end
+    def close_scope
+      @scope = @scope.parent
+    end
     def retrieve_constant_or_variable(name)
       @scope.retrieve_constant_or_variable(name)
     rescue Ploc::UndeclaredIdentifierError
@@ -22,18 +28,19 @@ module Ploc
       # Declare something just to keep the workflow going on
       declare_variable(name)
     end
-    def start_new_scope
-      @scope = @scope.build_subcontext
-    end
-    def close_scope
-      @scope = @scope.parent
-    end
     def retrieve_constant(name)
       @scope.retrieve_constant(name)
     rescue Ploc::UndeclaredIdentifierError
       self.source_code.errors << "Undeclared constant #{name}"
       # Declare something just to keep the workflow going on
       declare_constant(name, 0)
+    end
+    def retrieve_procedure(name)
+      @scope.retrieve_procedure(name)
+    rescue Ploc::UndeclaredIdentifierError
+      self.source_code.errors << "Undeclared procedure #{name}"
+      # Declare something just to keep the workflow going on
+      declare_procedure(name, Ploc::Address.new(0))
     end
     def retrieve_variable(name)
       @scope.retrieve_variable(name)
