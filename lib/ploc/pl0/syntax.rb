@@ -11,11 +11,13 @@ module Ploc::PL0
       optional { var; declare_variables }
       optional(repeat: true, name: :declare_procedure) do 
         procedure; identifier; semicolon
-        block
+        procedure_block
         semicolon
       end
       sentence
     end
+    # Alias block as procedure_block to control diferent semantics
+    define(:procedure_block) { block }
     define :declare_constants, separator: :comma, terminator: :semicolon do
       identifier; equal; number
     end
@@ -26,7 +28,7 @@ module Ploc::PL0
       optional do
         branch do
           sequence(name: :assignment) { identifier; assign; expression}
-          sequence { _call; identifier }
+          sequence(name: :call_procedure) { _call; identifier }
           sequence { _begin; multiple_sentences; _end }
           sequence {_if; condition; _then; sentence}
           sequence {_while; condition; _do; sentence}

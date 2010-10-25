@@ -24,11 +24,11 @@ module Ploc::PL0
       procedure_name = source_code.current_token
       context.declare_procedure(procedure_name, context.current_text_address)
     end
-    Syntax.before(:block) do |source_code|
+    Syntax.before(:procedure_block) do |source_code|
       context = source_code.context
       context.start_new_scope
     end
-    Syntax.after(:block) do |block_tokens, source_code|
+    Syntax.after(:procedure_block) do |block_tokens, source_code|
       context = source_code.context
       context.close_scope
     end
