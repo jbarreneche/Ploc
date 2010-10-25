@@ -19,9 +19,18 @@ module Ploc::PL0
       variable_name, _ = sequence_tokens
       source_code.context.declare_variable(variable_name)
     end
-    Syntax.after_each(:declare_procedure) do |sequence_tokens, source_code|
-      _, procedure_name = sequence_tokens
-      source_code.context.declare_procedure(procedure_name)
+    Syntax.after(:procedure) do |_, source_code|
+      context = source_code.context
+      procedure_name = source_code.current_token
+      context.declare_procedure(procedure_name, context.current_text_address)
+    end
+    Syntax.before(:block) do |source_code|
+      context = source_code.context
+      context.start_new_scope
+    end
+    Syntax.after(:block) do |block_tokens, source_code|
+      context = source_code.context
+      context.close_scope
     end
     Syntax.after(:ration) do |operand, source_code|
       source_code.context.push_operand operand

@@ -22,6 +22,12 @@ module Ploc
       # Declare something just to keep the workflow going on
       declare_variable(name)
     end
+    def start_new_scope
+      @scope = @scope.build_subcontext
+    end
+    def close_scope
+      @scope = @scope.parent
+    end
     def retrieve_constant(name)
       @scope.retrieve_constant(name)
     rescue Ploc::UndeclaredIdentifierError

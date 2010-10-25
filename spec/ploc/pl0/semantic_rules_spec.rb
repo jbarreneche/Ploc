@@ -1,9 +1,11 @@
 require 'spec_helper'
 require 'stringio'
+require 'ploc/address'
 require 'ploc/pl0/language'
 
 module Ploc::PL0
   describe SemanticRules do
+    let(:address) { Ploc::Address.new(rand(50)) }
     before(:each) do
       @context = CompilingContext.new
       Language.context_builder.stub(:call) {|source_code| @context.source_code=(source_code); source_code.context=(@context) }
@@ -42,7 +44,16 @@ module Ploc::PL0
     end
     describe "Declaring procedures" do
       it 'should allow to declare one procedure' do
-        @context.should_receive(:declare_procedure).with(identifier("P"))
+        @context.stub(:current_text_address) { address }
+        @context.should_receive(:declare_procedure).with(identifier("P"), address)
+        Language.compile StringIO.new("PROCEDURE P;;.")
+      end
+      it 'should create a new scope and then clear it out' do
+        # The first scope it's for the program, the other its the one from the procedure
+        @context.should_receive(:start_new_scope).ordered
+        @context.should_receive(:start_new_scope).ordered
+        @context.should_receive(:close_scope).ordered
+        @context.should_receive(:close_scope).ordered
         Language.compile StringIO.new("PROCEDURE P;;.")
       end
     end

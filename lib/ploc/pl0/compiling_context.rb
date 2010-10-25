@@ -14,6 +14,7 @@ module Ploc::PL0
       super(source_code)
       @output = []
       @operands = []
+      @text_output_size = 0
     end
     def initialize_new_program!(*args)
       self.output << Ploc::BinaryData.new(File.read('support/elf_header'))
@@ -30,32 +31,44 @@ module Ploc::PL0
         self.output << Ploc::BinaryData.new("8B 87", value.offset.value).to_s
       end
     end
+    def starting_text_address
+      @starting_text_address ||= Ploc::Address.new(0x08048480)
+    end
+    def current_text_address
+      starting_text_address + @text_output_size
+    end
+    def output_to_text_section(*args)
+      args.each do |arg| 
+        @text_output_size += arg.size
+        self.output << arg
+      end
+    end
     def compile_push_eax
-      self.output << Ploc::BinaryData.new("50").to_s
+      self.output_to_text_section Ploc::BinaryData.new("50").to_s
     end
     def compile_pop_eax
-      self.output << Ploc::BinaryData.new("58").to_s
+      self.output_to_text_section Ploc::BinaryData.new("58").to_s
     end
     def compile_pop_ebx
-      self.output << Ploc::BinaryData.new("5B").to_s
+      self.output_to_text_section Ploc::BinaryData.new("5B").to_s
     end
     def compile_imul_ebx
-      self.output << Ploc::BinaryData.new("F7 FB").to_s
+      self.output_to_text_section Ploc::BinaryData.new("F7 FB").to_s
     end
     def compile_idiv_ebx
-      self.output << Ploc::BinaryData.new("F7 EB").to_s
+      self.output_to_text_section Ploc::BinaryData.new("F7 EB").to_s
     end
     def compile_add_eax_ebx
-      self.output << Ploc::BinaryData.new("01 D8").to_s
+      self.output_to_text_section Ploc::BinaryData.new("01 D8").to_s
     end
     def compile_sub_eax_ebx
-      self.output << Ploc::BinaryData.new("29 D8").to_s
+      self.output_to_text_section Ploc::BinaryData.new("29 D8").to_s
     end
     def compile_xchg_eax_ebx
-      self.output << Ploc::BinaryData.new("93").to_s
+      self.output_to_text_section Ploc::BinaryData.new("93").to_s
     end
     def compile_mov_var_eax(var)
-      self.output << Ploc::BinaryData.new("89 87", var.offset.value).to_s
+      self.output_to_text_section Ploc::BinaryData.new("89 87", var.offset.value).to_s
     end
     def compile_assign_var_with_stack(var)
       self.compile_pop_eax

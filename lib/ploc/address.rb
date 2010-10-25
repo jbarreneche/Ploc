@@ -7,7 +7,12 @@ module Ploc
       @value = value
     end
     def -(address)
-      self.class.new(value - address.value)
+      other_value = self.class === address ? address.value : address
+      self.class.new(value - other_value)
+    end
+    def +(address)
+      other_value = self.class === address ? address.value : address
+      self.class.new(value + other_value)
     end
     def to_bin
       @bin_value ||= BinaryData.new(self.value).to_s
