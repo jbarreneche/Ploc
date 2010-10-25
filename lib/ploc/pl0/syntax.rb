@@ -54,8 +54,15 @@ module Ploc::PL0
       end
     end
     define :expression do
-      optional { sign }
-      sequence(separator: :sign) {term}
+      first_expresion;
+      optional do
+        sign;
+        sequence(separator: :sign, name: :more_expressions) {term}
+      end
+    end
+
+    define(:first_expresion) do
+      optional { sign }; term
     end
 
     define(:term, separator: :ration) {factor}

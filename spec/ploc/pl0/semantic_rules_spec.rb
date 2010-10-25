@@ -50,6 +50,8 @@ module Ploc::PL0
       @context.should_receive(:push_operand).with(operand("*")).ordered
       @context.should_receive(:push_operand).with(operand("+")).ordered
       @context.should_receive(:push_operand).with(operand("/")).ordered
+      @context.stub(:top_operand).and_return(operand("+"))
+      @context.stub(:pop_operand).and_return(operand("+"))
       Language.compile StringIO.new("Write(3 * 2 + 5 / 8).")
     end
     describe 'after factor' do
@@ -80,17 +82,44 @@ module Ploc::PL0
       end
     end
     context 'assignments' do
+      
     end
     context 'with multiples terms' do
+      it 'pops operands and adds them' do
+        @context.should_receive(:compile_mov_eax).with(3).ordered
+        @context.should_receive(:compile_push_eax).ordered
+        @context.should_receive(:compile_mov_eax).with(5).ordered
+        @context.should_receive(:compile_push_eax).ordered
+        @context.should_receive(:compile_operate_with_stack).with(operand('+')).ordered
+        Language.compile StringIO.new("VAR X; X := 3 + 5.")
+      end
+      it 'pops operands and substracts them' do
+        @context.should_receive(:compile_mov_eax).with(3).ordered
+        @context.should_receive(:compile_push_eax).ordered
+        @context.should_receive(:compile_mov_eax).with(5).ordered
+        @context.should_receive(:compile_push_eax).ordered
+        @context.should_receive(:compile_operate_with_stack).with(operand('-')).ordered
+        Language.compile StringIO.new("VAR X; X := 3 - 5.")
+      end
+      it 'handles multiple operands and their operations' do
+        @context.should_receive(:compile_mov_eax).with(3).ordered
+        @context.should_receive(:compile_push_eax).ordered
+        @context.should_receive(:compile_mov_eax).with(5).ordered
+        @context.should_receive(:compile_push_eax).ordered
+        @context.should_receive(:compile_operate_with_stack).with(operand('-')).ordered
+        @context.should_receive(:compile_mov_eax).with(9).ordered
+        @context.should_receive(:compile_push_eax).ordered
+        @context.should_receive(:compile_operate_with_stack).with(operand('+')).ordered
+        Language.compile StringIO.new("VAR X; X := 3 - 5 + 9.")
+      end
+    end
+    context 'with multiples factors' do
       it 'pops operands and then multiplies them' do
         @context.should_receive(:compile_mov_eax).with(3).ordered
         @context.should_receive(:compile_push_eax).ordered
         @context.should_receive(:compile_mov_eax).with(5).ordered
         @context.should_receive(:compile_push_eax).ordered
-        @context.should_receive(:compile_pop_eax).ordered
-        @context.should_receive(:compile_pop_ebx).ordered
-        @context.should_receive(:compile_imul_ebx).ordered
-        @context.should_receive(:compile_push_eax).ordered
+        @context.should_receive(:compile_operate_with_stack).with(operand('*')).ordered
         Language.compile StringIO.new("VAR X; X := 3 * 5.")
       end
       it 'pops operands and then divides them' do
@@ -98,10 +127,7 @@ module Ploc::PL0
         @context.should_receive(:compile_push_eax).ordered
         @context.should_receive(:compile_mov_eax).with(5).ordered
         @context.should_receive(:compile_push_eax).ordered
-        @context.should_receive(:compile_pop_eax).ordered
-        @context.should_receive(:compile_pop_ebx).ordered
-        @context.should_receive(:compile_idiv_ebx).ordered
-        @context.should_receive(:compile_push_eax).ordered
+        @context.should_receive(:compile_operate_with_stack).with(operand('/')).ordered
         Language.compile StringIO.new("VAR X; X := 3 / 5.")
       end
       it 'handles multiple operands and their operation' do
@@ -109,17 +135,30 @@ module Ploc::PL0
         @context.should_receive(:compile_push_eax).ordered
         @context.should_receive(:compile_mov_eax).with(5).ordered
         @context.should_receive(:compile_push_eax).ordered
-        @context.should_receive(:compile_pop_eax).ordered
-        @context.should_receive(:compile_pop_ebx).ordered
-        @context.should_receive(:compile_imul_ebx).ordered
+        @context.should_receive(:compile_operate_with_stack).with(operand('*')).ordered
+        @context.should_receive(:compile_mov_eax).with(9).ordered
+        @context.should_receive(:compile_push_eax).ordered
+        @context.should_receive(:compile_operate_with_stack).with(operand('/')).ordered
+        Language.compile StringIO.new("VAR X; X := 3 * 5 / 9.")
+      end
+    end
+    context 'with multiple factors and terms' do
+      it 'just works!' do
+        @context.should_receive(:compile_mov_eax).with(3).ordered
+        @context.should_receive(:compile_push_eax).ordered
+        @context.should_receive(:compile_mov_eax).with(5).ordered
+        @context.should_receive(:compile_push_eax).ordered
+        @context.should_receive(:compile_operate_with_stack).with(operand('*')).ordered
+        @context.should_receive(:compile_mov_eax).with(18).ordered
         @context.should_receive(:compile_push_eax).ordered
         @context.should_receive(:compile_mov_eax).with(9).ordered
         @context.should_receive(:compile_push_eax).ordered
-        @context.should_receive(:compile_pop_eax).ordered
-        @context.should_receive(:compile_pop_ebx).ordered
-        @context.should_receive(:compile_idiv_ebx).ordered
+        @context.should_receive(:compile_operate_with_stack).with(operand('/')).ordered
+        @context.should_receive(:compile_operate_with_stack).with(operand('+')).ordered
+        @context.should_receive(:compile_mov_eax).with(8).ordered
         @context.should_receive(:compile_push_eax).ordered
-        Language.compile StringIO.new("VAR X; X := 3 * 5 / 9.")
+        @context.should_receive(:compile_operate_with_stack).with(operand('-')).ordered
+        Language.compile StringIO.new("VAR X; X := 3 * 5 + 18 / 9 - 8.")
       end
     end
     def identifier(v)

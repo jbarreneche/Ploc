@@ -45,8 +45,13 @@ module Ploc::PL0
     Syntax.after_each(:term) do |_, source_code|
       context = source_code.context
       if context.top_operand && Ploc::Token::Operand::RATIONS.include?(context.top_operand.token)
-        context.compile_term_operation(context.pop_operand)
+        context.compile_operate_with_stack(context.pop_operand)
       end
+    end
+    Syntax.after_each(:more_expressions) do |_, source_code|
+      context = source_code.context
+      raise "Ups, top operand isn't a sign :S" unless context.top_operand && Ploc::Token::Operand::SIGNS.include?(context.top_operand.token)
+      context.compile_operate_with_stack(context.pop_operand)
     end
   end
 end

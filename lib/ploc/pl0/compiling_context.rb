@@ -36,19 +36,39 @@ module Ploc::PL0
     def compile_pop_eax
       self.output << Ploc::BinaryData.new("58").to_s
     end
+    def compile_pop_ebx
+      self.output << Ploc::BinaryData.new("5B").to_s
+    end
     def compile_imul_ebx
       self.output << Ploc::BinaryData.new("F7 FB").to_s
     end
     def compile_idiv_ebx
       self.output << Ploc::BinaryData.new("F7 EB").to_s
     end
-    def compile_term_operation(operand)
+    def compile_add_eax_ebx
+      self.output << Ploc::BinaryData.new("01 D8").to_s
+    end
+    def compile_sub_eax_ebx
+      self.output << Ploc::BinaryData.new("29 D8").to_s
+    end
+    def compile_xchg_eax_ebx
+      self.output << Ploc::BinaryData.new("93").to_s
+    end
+    def compile_operate_with_stack(operand)
       self.compile_pop_eax
       self.compile_pop_ebx
-      if operand.token == '*'
+      case operand.token
+      when '*'
         self.compile_imul_ebx
-      else
+      when '/'
         self.compile_idiv_ebx
+      when '+'
+        self.compile_add_eax_ebx
+      when '-'
+        self.compile_xchg_eax_ebx
+        self.compile_sub_eax_ebx
+      else
+        raise 'Unknown operand...'
       end
       self.compile_push_eax
     end
