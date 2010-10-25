@@ -82,7 +82,12 @@ module Ploc::PL0
       end
     end
     context 'assignments' do
-      
+      it 'updates var content' do
+        @context.should_receive(:compile_mov_var_eax).with do |var|
+          Ploc::Variable === var && var.name.should == :X
+        end
+        Language.compile StringIO.new("VAR X, Z; X := Z.")
+      end
     end
     context 'with multiples terms' do
       it 'pops operands and adds them' do

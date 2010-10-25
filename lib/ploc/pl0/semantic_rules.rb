@@ -53,5 +53,11 @@ module Ploc::PL0
       raise "Ups, top operand isn't a sign :S" unless context.top_operand && Ploc::Token::Operand::SIGNS.include?(context.top_operand.token)
       context.compile_operate_with_stack(context.pop_operand)
     end
+    Syntax.after(:assignment) do |assignment, source_code|
+      assigned_var_token, _ = assignment
+      context = source_code.context
+      assigned_variable = context.retrieve_variable(assigned_var_token.token)
+      context.compile_assign_var_with_stack(assigned_variable)
+    end
   end
 end

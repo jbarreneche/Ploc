@@ -29,6 +29,13 @@ module Ploc
       # Declare something just to keep the workflow going on
       declare_constant(name, 0)
     end
+    def retrieve_variable(name)
+      @scope.retrieve_variable(name)
+    rescue Ploc::UndeclaredIdentifierError
+      self.source_code.errors << "Undeclared variable #{name}"
+      # Declare something just to keep the workflow going on
+      declare_variable(name)
+    end
     def constants
       @scope.constants
     end

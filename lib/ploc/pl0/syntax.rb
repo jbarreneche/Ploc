@@ -25,7 +25,7 @@ module Ploc::PL0
     define :sentence do
       optional do
         branch do
-          sequence { identifier; assign; expression}
+          sequence(name: :assignment) { identifier; assign; expression}
           sequence { _call; identifier }
           sequence { _begin; multiple_sentences; _end }
           sequence {_if; condition; _then; sentence}

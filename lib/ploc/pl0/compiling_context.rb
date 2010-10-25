@@ -54,6 +54,13 @@ module Ploc::PL0
     def compile_xchg_eax_ebx
       self.output << Ploc::BinaryData.new("93").to_s
     end
+    def compile_mov_var_eax(var)
+      self.output << Ploc::BinaryData.new("89 87", var.offset.value).to_s
+    end
+    def compile_assign_var_with_stack(var)
+      self.compile_pop_eax
+      self.compile_mov_var_eax(var)
+    end
     def compile_operate_with_stack(operand)
       self.compile_pop_eax
       self.compile_pop_ebx

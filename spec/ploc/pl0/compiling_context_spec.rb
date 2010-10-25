@@ -5,6 +5,7 @@ require 'ploc/pl0/compiling_context'
 module Ploc::PL0
   describe CompilingContext do
     its(:output) { should be_empty }
+    let(:some_var) { Ploc::Variable.new(:foo, Ploc::Address.new(10)) }
     it 'should output header when initializing new program' do
       pending('still not sure about how to implement fixups...')
       subject.output.should_receive(:<<)
@@ -28,6 +29,13 @@ module Ploc::PL0
         subject.should_receive(:compile_sub_eax_ebx).ordered
         subject.should_receive(:compile_push_eax).ordered
         subject.compile_operate_with_stack(Ploc::Token::Operand.new('-'))
+      end
+    end
+    describe '.compile_assign_var_with_stack' do
+      it 'pops eax and moves eax to the var' do
+        subject.should_receive(:compile_pop_eax).ordered
+        subject.should_receive(:compile_mov_var_eax).with(some_var).ordered
+        subject.compile_assign_var_with_stack(some_var)
       end
     end
     describe 'compiling instructions' do
@@ -72,6 +80,10 @@ module Ploc::PL0
       it 'should output xchg_eax_ebx as 93' do
         subject.output.should_receive(:<<).with("\x93")
         subject.compile_xchg_eax_ebx
+      end
+      it 'should output mov_var_eax as 89 87 var' do
+        subject.output.should_receive(:<<).with("\x89\x87\xA\0\0\0")
+        subject.compile_mov_var_eax(Ploc::Variable.new(:foo, Ploc::Address.new(10)))
       end
     end
   end
