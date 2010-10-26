@@ -14,7 +14,15 @@ module Ploc::PL0
       subject.push_operand :operand
       subject.pop_operand.should == :operand
     end
-    context ".compile_operate_with_stack" do
+    describe '.compile_call_procedure' do
+      it 'compiles to a jmp to (proc_addr - (current_addr + size_of(jmp_instr)))' do
+        proc = mock('Procedure', address: Ploc::Address.new(25))
+        subject.should_receive(:current_text_address) { Ploc::Address.new(50) }
+        subject.output.should_receive(:<<).with("\xE8" + Ploc::BinaryData.parse_int(25 - (50 + 5)))
+        subject.compile_call_procedure(proc)
+      end
+    end
+    describe ".compile_operate_with_stack" do
       it 'operates + as an add eax ebx' do
         subject.should_receive(:compile_pop_eax).ordered
         subject.should_receive(:compile_pop_ebx).ordered

@@ -9,6 +9,7 @@ module Ploc::PL0
       mov_eax_num: 'B8', mov_eax_edi_plus_offset: '8B 87',
       mov_var_eax: '89 87',
       jpo: '7B', je: '74', jne: '75', jg: '7F', jge: '7D', jl: '7C', jle: '7E',
+      call: 'E8',
       # Simple compile instructions
       push_eax: '50', pop_eax: '58', pop_ebx: '5B', xchg_eax_ebx: '93',
       imul_ebx: 'F7 FB', idiv_ebx: 'F7 EB', add_eax_ebx: '01 D8', sub_eax_ebx: '29 D8',
@@ -64,6 +65,12 @@ module Ploc::PL0
     def compile_assign_var_with_stack(var)
       self.compile_pop_eax
       self.compile_mov_var_eax(var)
+    end
+    def compile_call_procedure(procedure)
+      self.compile_call_address procedure.address - (current_text_address + 5)
+    end
+    def compile_call_address(address)
+      self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:call],  address.value
     end
     def compile_skip_jump(operand)
       case operand.token.downcase
