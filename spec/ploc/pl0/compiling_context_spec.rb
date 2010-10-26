@@ -105,6 +105,11 @@ module Ploc::PL0
         subject.output.should_receive(:<<).with("\x39\xC3")
         subject.compile_cmp_eax_ebx
       end
+      it 'compiles jmp as E9 address' do
+        subject.stub(:current_text_address) { Ploc::Address.new(50) }
+        subject.output.should_receive(:<<).with("\xE9" + Ploc::BinaryData.new(25 - (50 + 5)))
+        subject.compile_jmp(Ploc::Address.new(25))
+      end
       context '#compile_short_jump' do
         it 'compiles operand ODD as jpo(5)' do
           subject.output.should_receive(:<<).with("\x7B\x05")

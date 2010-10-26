@@ -30,8 +30,8 @@ module Ploc::PL0
           sequence(name: :assignment) { identifier; assign; expression}
           sequence(name: :call_procedure) { _call; identifier }
           sequence { _begin; multiple_sentences; _end }
-          sequence {_if; condition; _then; sentence}
-          sequence {_while; condition; _do; sentence}
+          sequence(name: :branch) {_if; condition; _then; sentence}
+          sequence(name: :loop)  {_while; condition; _do; sentence}
           sequence do 
             output; left_par
             sequence(separator: :comma) { output_expression }

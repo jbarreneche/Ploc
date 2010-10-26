@@ -92,5 +92,16 @@ module Ploc::PL0
       context.compile_skip_jump(bop)
       context.compile_fixable_jmp
     end
+    Syntax.after(:branch) do |branch, source_code|
+      context = source_code.context
+      context.fix_jmp(context.current_text_address)
+    end
+    Syntax.around(:loop) do |source_code, &block|
+      context = source_code.context
+      condition_address = context.current_text_address
+      block.call(source_code)
+      context.compile_jmp(condition_address)
+      context.fix_jmp(context.current_text_address)
+    end
   end
 end

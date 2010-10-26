@@ -93,6 +93,25 @@ module Ploc::PL0
         end
       end
     end
+    describe 'Flow control' do
+      context 'If' do
+        it 'fixes previous jump' do
+          @context.should_receive(:fix_jmp).with(an_instance_of(Ploc::Address))
+          Language.compile StringIO.new('If odd 3 then write("alumni").')
+        end
+      end
+      context 'While' do
+        it 'fixes previous jump' do
+          @context.should_receive(:fix_jmp).with(an_instance_of(Ploc::Address))
+          Language.compile StringIO.new('while odd 3 then write("alumni").')
+        end
+        it 'jumps to the begining of the loop before fix jumping' do
+          @context.should_receive(:compile_jmp).with(an_instance_of(Ploc::Address)).ordered
+          @context.should_receive(:fix_jmp).with(an_instance_of(Ploc::Address)).ordered
+          Language.compile StringIO.new('while odd 3 then write("alumni").')
+        end
+      end
+    end
     describe 'Expressions' do
       it "pushes operands in the right order" do
         @context.should_receive(:push_operand).with(operand("*")).ordered
@@ -192,6 +211,7 @@ module Ploc::PL0
           @context.should_receive(:compile_test_eax_oddity)
           @context.should_receive(:compile_skip_jump).with(reserved_word('ODD'))
           @context.should_receive(:compile_fixable_jmp)
+          @context.stub(:fix_jmp)
           Language.compile StringIO.new('if ODD 3 then write("3 is odd!! :D").')
         end
       end
@@ -207,6 +227,7 @@ module Ploc::PL0
           @context.should_receive(:compile_cmp_eax_ebx)
           @context.should_receive(:compile_skip_jump).with(operand('='))
           @context.should_receive(:compile_fixable_jmp)
+          @context.stub(:fix_jmp)
           Language.compile StringIO.new('if 3 = 5 then write("3 equals 5, AWESOME! :D").')
         end
       end

@@ -124,9 +124,13 @@ module Ploc::PL0
       self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:jmp]
       @pending_fix_jumps << [self.current_text_address, self.output.write_later(4)]
     end
+    def compile_jmp(address)
+      self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:jmp], (address - (current_text_address + 5)).value
+    end
     def fix_jmp(address)
       jump_from, fixable_point = @pending_fix_jumps.pop
-      fixable_point.fix(jump_from - address + 5)
+      jump_correction = (jump_from - address + 5).value
+      fixable_point.fix(Ploc::BinaryData.new(jump_correction))
     end
   end
 end
