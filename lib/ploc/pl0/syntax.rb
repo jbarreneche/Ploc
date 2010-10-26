@@ -94,5 +94,4 @@ module Ploc::PL0
     terminal :sign, ::Ploc::Token::Operand, *::Ploc::Token::Operand::SIGNS
   end
   def Syntax.to_s; "Ploc::PL0::Syntax"; end
-  # puts "------- #{Syntax.nodes[:first_expresion].inspect}"
 end

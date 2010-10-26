@@ -5,7 +5,9 @@ require 'ploc/source_code'
 module Ploc::LanguageNode
   describe Sequence do
     def input_sequence(array)
-      Ploc::SourceCode.new(array.push(nil).enum_for)
+      Ploc::SourceCode.new(array.push(nil).enum_for).tap do |sc|
+        sc.next_token
+      end
     end
     before(:each) do
       @language = Object.new
@@ -14,31 +16,41 @@ module Ploc::LanguageNode
       @smtg = Terminal.new @language, String, *(0..9).map(&:to_s)
       @language.stub('nodes').and_return(term: @term, smtg: @smtg, sep: @sep)
     end
-    it 'should repeat correctly until separator' do
-      seq_node = Sequence.new(@language, terminator: :term) { smtg }
+    context 'with a terminator' do
+      subject { Sequence.new(@language, terminator: :term) { smtg } }
 
-      tokens = input_sequence(%w[1 2 3 4 5 6 7 8 9 t])
-      tokens.next_token
-      tokens.should_not_receive(:errors)
-      seq_node.call(tokens).should == %w[1 2 3 4 5 6 7 8 9]
+      it 'repeats correctly until terminator' do
+        source_code = input_sequence(%w[1 2 3 4 5 6 7 8 9 t])
+        source_code.should_not_receive(:errors)
+        subject.call(source_code).should == %w[1 2 3 4 5 6 7 8 9]
+      end
     end
-    it 'should repeat the sequence while there are separators' do
-      seq_node = Sequence.new(@language, separator: :sep) { smtg }
+    context 'with a separator' do
+      subject { Sequence.new(@language, separator: :sep) { smtg }}
 
-      tokens = input_sequence(%w[1 s 1 s 1 s 1 s 1 s 1 s 1 s 1 s 1])
-      tokens.next_token
-      tokens.should_not_receive(:errors)
-      seq_node.call(tokens).should == %w[1 1 1 1 1 1 1 1 1]
-
+      it 'repeats the sequence while there are separators' do
+        source_code = input_sequence(%w[1 s 1 s 1 s 1 s 1 s 1 s 1 s 1 s 1])
+        source_code.should_not_receive(:errors)
+        subject.call(source_code).should == %w[1 1 1 1 1 1 1 1 1]
+      end
     end
-    it 'should repeat correctly with separators until separator' do
-      seq_node = Sequence.new(@language, separator: :sep, terminator: :term) { smtg }
+    context 'with a separator' do
+      subject { Sequence.new(@language, separator: :sep, terminator: :term) { smtg }}
 
-      tokens = input_sequence(%w[1 s 1 s 1 s 1 s 1 s 1 s 1 s 1 s 1 t])
-      tokens.next_token
-      tokens.should_not_receive(:errors)
-      seq_node.call(tokens).should == %w[1 1 1 1 1 1 1 1 1]
+      it 'repeats correctly while separator until terminator' do
+        source_code = input_sequence(%w[1 s 1 s 1 s 1 s 1 s 1 s 1 s 1 s 1 t])
+        source_code.should_not_receive(:errors)
+        subject.call(source_code).should == %w[1 1 1 1 1 1 1 1 1]
+      end
+    end
+    context 'with repeat param' do
+      subject { Sequence.new(@language, repeat: true) { smtg }}
 
+      it 'repeats correctly while separator until terminator' do
+        source_code = input_sequence(%w[1 1 1 1 1 1 1 1 1])
+        source_code.should_not_receive(:errors)
+        subject.call(source_code).should == %w[1 1 1 1 1 1 1 1 1]
+      end
     end
   end
 end

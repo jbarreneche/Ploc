@@ -90,4 +90,22 @@ describe Ploc::Scope do
       @subcontext.variables.should include(foo_bar)
     end
   end
+  context 'retrieving from local' do
+    it 'allows to retrieve declared type' do
+      foo_var = subject.declare(:variable, :foo)
+      subject.retrieve_variable(:foo) == foo_var
+    end
+    it 'allows to retrieve declared type in parent' do
+      foo_var = subject.declare(:variable, :foo)
+      subcontext = subject.build_subcontext
+      subcontext.retrieve_variable(:foo) == foo_var
+    end
+    it 'raises UndeclaredIdentifierError when not declared' do
+      foo_var = subject.declare(:variable, :foo)
+      subcontext = subject.build_subcontext
+      expect {
+        subcontext.retrieve_constant(:foo) == foo_var
+      }.to raise_error(Ploc::UndeclaredIdentifierError)
+    end
+  end
 end

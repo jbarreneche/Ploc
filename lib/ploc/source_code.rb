@@ -11,7 +11,7 @@ module Ploc
     end
     
     def next_token
-      @current_token =  scanner.next
+      @current_token = scanner.next
     end
   end
 end
