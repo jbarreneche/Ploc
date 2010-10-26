@@ -73,5 +73,11 @@ module Ploc::PL0
       procedure = context.retrieve_procedure(procedure_identifier.token)
       context.compile_call_procedure(procedure)
     end
+    Syntax.after(:odd) do |odd, source_code|
+      source_code.context.push_boolean_operand(odd)
+    end
+    Syntax.after(:bop) do |bop, source_code|
+      source_code.context.push_boolean_operand(bop)
+    end
   end
 end

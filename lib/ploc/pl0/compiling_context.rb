@@ -22,10 +22,14 @@ module Ploc::PL0
     def_delegator :@operands, :<<, :push_operand
     def_delegator :@operands, :pop, :pop_operand
     def_delegator :@operands, :last, :top_operand
+    def_delegator :@boolean_operands, :<<, :push_boolean_operand
+    def_delegator :@boolean_operands, :pop, :pop_boolean_operand
+    def_delegator :@boolean_operands, :last, :top_boolean_operand
     def initialize(source_code = nil)
       super(source_code)
       @output = []
       @operands = []
+      @boolean_operands = []
       @text_output_size = 0
     end
     def initialize_new_program!

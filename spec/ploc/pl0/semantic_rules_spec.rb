@@ -179,6 +179,37 @@ module Ploc::PL0
         end
       end
     end
+    describe 'Conditions' do
+      context 'with ODD operand' do
+        it 'pushes ODD as a boolean operand' do
+          @context.should_receive(:push_boolean_operand).with(reserved_word('ODD'))
+          Language.compile StringIO.new('if ODD 3 then write("3 is odd!! :D").')
+        end
+        it 'compiles to 58 A8 01 7B 05 E9 00 00 00 00' do
+          pending
+          @context.should_receive(:compile_pop_eax)
+          @context.should_receive(:compile_test_eax_oddity)
+          @context.should_receive(:compile_skip_jump).with(reserved_word('ODD'))
+          @context.should_receive(:compile_fixable_jmp)
+          Language.compile StringIO.new('if ODD 3 then write("3 is odd!! :D").')
+        end
+      end
+      context 'with boolean operators between two expressions' do
+        it 'pushes the boolean operator as a boolean operand' do
+          @context.should_receive(:push_boolean_operand).with(operand('='))
+          Language.compile StringIO.new('if 3 = 5 then write("3 equals 5, AWESOME! :D").')
+        end
+        it 'compiles to 58 5B 39 C3 (#condition) E9 00 00 00 00' do
+          pending
+          @context.should_receive(:compile_pop_eax)
+          @context.should_receive(:compile_pop_ebx)
+          @context.should_receive(:compile_cmp_eax_ebx)
+          @context.should_receive(:compile_skip_jump).with(operand('='))
+          @context.should_receive(:compile_fixable_jmp)
+          Language.compile StringIO.new('if 3 = 5 then write("3 equals 5, AWESOME! :D").')
+        end
+      end
+    end
     def identifier(v)
       Ploc::Token::Identifier.new v
     end
@@ -187,6 +218,9 @@ module Ploc::PL0
     end
     def operand(op)
       Ploc::Token::Operand.new op
+    end
+    def reserved_word(word)
+      Ploc::Token::ReservedWord.new word
     end
   end
 end
