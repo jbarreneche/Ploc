@@ -9,13 +9,13 @@ module Ploc::PL0
       mov_eax_num: 'B8', mov_eax_edi_plus_offset: '8B 87',
       mov_var_eax: '89 87',
       jpo: '7B', je: '74', jne: '75', jg: '7F', jge: '7D', jl: '7C', jle: '7E',
-      call: 'E8',
+      call: 'E8', jmp: 'E9',
       # Simple compile instructions
-      push_eax: '50', pop_eax: '58', pop_ebx: '5B', xchg_eax_ebx: '93',
+      push_eax: '50', pop_eax: '58', pop_ebx: '5B', xchg_eax_ebx: '93', cmp_eax_ebx: '39 C3',
       imul_ebx: 'F7 FB', idiv_ebx: 'F7 EB', add_eax_ebx: '01 D8', sub_eax_ebx: '29 D8',
       test_eax_oddity: 'A8 01'
     }
-    SIMPLE_COMPILE_INSTRUCTIONS = %w[push_eax pop_eax pop_ebx xchg_eax_ebx imul_ebx idiv_ebx add_eax_ebx sub_eax_ebx test_eax_oddity]
+    SIMPLE_COMPILE_INSTRUCTIONS = %w[push_eax pop_eax pop_ebx xchg_eax_ebx cmp_eax_ebx imul_ebx idiv_ebx add_eax_ebx sub_eax_ebx test_eax_oddity]
 
     extend Forwardable
     attr_reader :output
@@ -31,6 +31,7 @@ module Ploc::PL0
       @operands = []
       @boolean_operands = []
       @text_output_size = 0
+      @pending_fix_jumps = []
     end
     def initialize_new_program!
       part_1, part_2, part_3 = File.read('support/elf_header').split(/\$\(\w+\)/)
@@ -118,6 +119,14 @@ module Ploc::PL0
         raise 'Unknown operand...'
       end
       self.compile_push_eax
+    end
+    def compile_fixable_jmp
+      self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:jmp]
+      @pending_fix_jumps << [self.current_text_address, self.output.write_later(4)]
+    end
+    def fix_jmp(address)
+      jump_from, fixable_point = @pending_fix_jumps.pop
+      fixable_point.fix(jump_from - address + 5)
     end
   end
 end

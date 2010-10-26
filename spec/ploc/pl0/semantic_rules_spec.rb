@@ -14,7 +14,8 @@ module Ploc::PL0
       Language.context_builder.stub(:call) {|source_code| @context.source_code=(source_code); source_code.context=(@context) }
     end
     it 'notifies the begining of the program' do
-      @context.should_receive :initialize_new_program!
+      @context.should_receive(:initialize_new_program!)
+      @context.stub(:complete_program)
       Language.compile empty_program
     end
     it 'notifies the program completition after the begining' do
@@ -183,10 +184,10 @@ module Ploc::PL0
       context 'with ODD operand' do
         it 'pushes ODD as a boolean operand' do
           @context.should_receive(:push_boolean_operand).with(reserved_word('ODD'))
+          @context.stub(:pop_boolean_operand) {reserved_word('ODD')}
           Language.compile StringIO.new('if ODD 3 then write("3 is odd!! :D").')
         end
         it 'compiles to 58 A8 01 7B 05 E9 00 00 00 00' do
-          pending
           @context.should_receive(:compile_pop_eax)
           @context.should_receive(:compile_test_eax_oddity)
           @context.should_receive(:compile_skip_jump).with(reserved_word('ODD'))
@@ -197,10 +198,10 @@ module Ploc::PL0
       context 'with boolean operators between two expressions' do
         it 'pushes the boolean operator as a boolean operand' do
           @context.should_receive(:push_boolean_operand).with(operand('='))
+          @context.stub(:pop_boolean_operand) {operand('=')}
           Language.compile StringIO.new('if 3 = 5 then write("3 equals 5, AWESOME! :D").')
         end
-        it 'compiles to 58 5B 39 C3 (#condition) E9 00 00 00 00' do
-          pending
+        it 'compiles to 58 5B 39 C3 (#condition operand) E9 00 00 00 00' do
           @context.should_receive(:compile_pop_eax)
           @context.should_receive(:compile_pop_ebx)
           @context.should_receive(:compile_cmp_eax_ebx)

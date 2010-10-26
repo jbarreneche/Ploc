@@ -101,6 +101,10 @@ module Ploc::PL0
         subject.output.should_receive(:<<).with("\xA8\x01")
         subject.compile_test_eax_oddity
       end
+      it 'compiles cmp_eax_ebx as 39 C3' do
+        subject.output.should_receive(:<<).with("\x39\xC3")
+        subject.compile_cmp_eax_ebx
+      end
       context '#compile_short_jump' do
         it 'compiles operand ODD as jpo(5)' do
           subject.output.should_receive(:<<).with("\x7B\x05")
@@ -130,6 +134,13 @@ module Ploc::PL0
           subject.output.should_receive(:<<).with("\x7E\x05")
           subject.compile_skip_jump(token('<='))
         end
+      end
+    end
+    describe 'compiling fixable jumps' do
+      it 'outputs jump and delay the addres where to jump' do
+        subject.output.should_receive(:<<).with("\xE9")
+        subject.output.should_receive(:write_later).with(4)
+        subject.compile_fixable_jmp
       end
     end
     def token(str)

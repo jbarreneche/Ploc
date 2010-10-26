@@ -79,5 +79,18 @@ module Ploc::PL0
     Syntax.after(:bop) do |bop, source_code|
       source_code.context.push_boolean_operand(bop)
     end
+    Syntax.after(:condition) do |condition, source_code|
+      context = source_code.context
+      bop = context.pop_boolean_operand
+      context.compile_pop_eax
+      if bop == 'ODD'
+        context.compile_test_eax_oddity
+      else
+        context.compile_pop_ebx
+        context.compile_cmp_eax_ebx
+      end
+      context.compile_skip_jump(bop)
+      context.compile_fixable_jmp
+    end
   end
 end
