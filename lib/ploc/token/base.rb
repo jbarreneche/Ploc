@@ -8,10 +8,10 @@ module Ploc::Token
     end
     def ==(o)
       case o
-      when String
-        self.to_s == o
+      when ::String
+        self.token.casecmp(o) == 0
       when self.class
-        self.token == o.token
+        self.token.casecmp(o.token) == 0
       else
         super(o)
       end

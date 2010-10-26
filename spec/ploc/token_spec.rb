@@ -32,4 +32,12 @@ describe Ploc::Token do
       Ploc::Token.tokenize(%Q{"$ \n \n }).should be_a(Ploc::Token::Unknown)
     end
   end
+  describe 'equality' do
+    it 'compares case insensitively with tokens of the same type' do
+      Ploc::Token.tokenize('bla').should == Ploc::Token.tokenize('BLA')
+    end
+    it 'compares case insensitively with strings' do
+      Ploc::Token.tokenize('bla').should == 'BLA'
+    end
+  end
 end
