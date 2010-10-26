@@ -8,11 +8,13 @@ module Ploc::PL0
     ASSEMBLY_INSTRUCTIONS = {
       mov_eax_num: 'B8', mov_eax_edi_plus_offset: '8B 87',
       mov_var_eax: '89 87',
+      jpo: '7B', je: '74', jne: '75', jg: '7F', jge: '7D', jl: '7C', jle: '7E',
       # Simple compile instructions
       push_eax: '50', pop_eax: '58', pop_ebx: '5B', xchg_eax_ebx: '93',
-      imul_ebx: 'F7 FB', idiv_ebx: 'F7 EB', add_eax_ebx: '01 D8', sub_eax_ebx: '29 D8'
+      imul_ebx: 'F7 FB', idiv_ebx: 'F7 EB', add_eax_ebx: '01 D8', sub_eax_ebx: '29 D8',
+      test_eax_oddity: 'A8 01'
     }
-    SIMPLE_COMPILE_INSTRUCTIONS = %w[push_eax pop_eax pop_ebx xchg_eax_ebx imul_ebx idiv_ebx add_eax_ebx sub_eax_ebx]
+    SIMPLE_COMPILE_INSTRUCTIONS = %w[push_eax pop_eax pop_ebx xchg_eax_ebx imul_ebx idiv_ebx add_eax_ebx sub_eax_ebx test_eax_oddity]
 
     extend Forwardable
     attr_reader :output
@@ -62,6 +64,24 @@ module Ploc::PL0
     def compile_assign_var_with_stack(var)
       self.compile_pop_eax
       self.compile_mov_var_eax(var)
+    end
+    def compile_skip_jump(operand)
+      case operand.token.downcase
+      when 'odd'
+        self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:jpo], "05"
+      when '='
+        self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:je], "05"
+      when '<>'
+        self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:jne], "05"
+      when '>'
+        self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:jg], "05"
+      when '>='
+        self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:jge], "05"
+      when '<'
+        self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:jl], "05"
+      when '<='
+        self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:jle], "05"
+      end
     end
     def compile_operate_with_stack(operand)
       self.compile_pop_eax

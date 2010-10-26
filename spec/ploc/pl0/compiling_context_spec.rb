@@ -85,6 +85,43 @@ module Ploc::PL0
         subject.output.should_receive(:<<).with("\x89\x87\xA\0\0\0")
         subject.compile_mov_var_eax(Ploc::Variable.new(:foo, Ploc::Address.new(10)))
       end
+      it 'compiles test_eax_oddity as A8 01' do
+        subject.output.should_receive(:<<).with("\xA8\x01")
+        subject.compile_test_eax_oddity
+      end
+      context '#compile_short_jump' do
+        it 'compiles operand ODD as jpo(5)' do
+          subject.output.should_receive(:<<).with("\x7B\x05")
+          subject.compile_skip_jump(token('ODD'))
+        end
+        it 'compiles operand = as je(5)' do
+          subject.output.should_receive(:<<).with("\x74\x05")
+          subject.compile_skip_jump(token('='))
+        end
+        it 'compiles operand <> as jne(5)' do
+          subject.output.should_receive(:<<).with("\x75\x05")
+          subject.compile_skip_jump(token('<>'))
+        end
+        it 'compiles operand > as jg(5)' do
+          subject.output.should_receive(:<<).with("\x7F\x05")
+          subject.compile_skip_jump(token('>'))
+        end
+        it 'compiles operand >= as jge(5)' do
+          subject.output.should_receive(:<<).with("\x7D\x05")
+          subject.compile_skip_jump(token('>='))
+        end
+        it 'compiles operand < as jl(5)' do
+          subject.output.should_receive(:<<).with("\x7C\x05")
+          subject.compile_skip_jump(token('<'))
+        end
+        it 'compiles operand <= as jle(5)' do
+          subject.output.should_receive(:<<).with("\x7E\x05")
+          subject.compile_skip_jump(token('<='))
+        end
+      end
+    end
+    def token(str)
+      mock('Token', token: str)
     end
   end
 end
