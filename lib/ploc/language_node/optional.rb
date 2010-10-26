@@ -1,5 +1,6 @@
 require 'ploc/language_node/sequence'
 require 'forwardable'
+
 module Ploc::LanguageNode
   class Optional < Base
     extend ::Forwardable

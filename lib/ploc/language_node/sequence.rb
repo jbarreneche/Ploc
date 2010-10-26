@@ -13,20 +13,20 @@ module Ploc::LanguageNode
       transversed_tokens
     end
     def matches_first?(token)
-      optional? || required_nodes.first.matches_first?(token)
+      starting_nodes.any? {|node| node.matches_first?(token)}
     end
     def add_node(name, node)
       @sequence << super
       node
     end
-    def inspect
-      "<Node sequence:#{@sequence.inspect} options:#{@options}>"
-    end
     def optional?
-      required_nodes.empty?
+      !sequence_nodes.any?(&:required?)
     end
     def add_after_each_callback(&block)
       @after_each_callbacks << block
+    end
+    def inspect
+      "<Node sequence:#{@sequence.inspect} options:#{@options.inspect}>"
     end
   private
     def separator_node
@@ -36,21 +36,17 @@ module Ploc::LanguageNode
       @terminator_node ||= fetch_node(@options[:terminator]) if @options[:terminator]
     end
     def sequence_nodes
-      @sequence_nodes ||= @sequence.map do |node_name| 
-        fetch_node(node_name)
-      end
+      @sequence_nodes ||= @sequence.map {|node_name| fetch_node(node_name) }
     end
     def matches_separator?(token)
       separator_node ? separator_node.matches_first?(token) : starting_nodes.any? {|m| m.matches_first? token }
     end
-    def required_nodes
-      @required_nodes ||= sequence_nodes.select(&:required?)
-    end
     def starting_nodes
-      @starting_nodes ||= sequence_nodes.first.required? ? 
-        [sequence_nodes.first] : 
-        # Starting nodes are the optionals plus the first required
-        sequence_nodes.slice_before(&:required?).take(2).flatten
+      @starting_nodes ||= begin
+        optionals = sequence_nodes.take_while(&:optional?)
+        first_required = sequence_nodes.size > optionals.size ? [sequence_nodes[optionals.size]] : []
+        optionals + first_required
+      end
     end
     def recursive_call(source_code, transversed_tokens = [])
       new_sequence_tokens = call_sequence(source_code)
@@ -83,11 +79,11 @@ module Ploc::LanguageNode
     def report_invalid_sequence_ending(source_code)
       case
       when separator_node && terminator_node
-        source_code.errors << "Expecting separator #{separator_node.inspect} or terminator #{terminator_node.inspect} but found #{source_code.current_token.inspect}"
+        report_found_unexpected_token(source_code, "Expecting separator #{separator_node.inspect} or terminator #{terminator_node.inspect}")
       when separator_node
-        source_code.errors << "Expecting separator #{separator_node.inspect} but found #{source_code.current_token.inspect}"
+        report_found_unexpected_token(source_code, "Expecting separator #{separator_node.inspect}")
       when terminator_node
-        source_code.errors << "Expecting terminator #{terminator_node.inspect} or #{starting_nodes.inspect} but found #{source_code.current_token.inspect}"
+        report_found_unexpected_token(source_code, "Expecting terminator #{terminator_node.inspect} or #{starting_nodes.inspect}")
       else
         nil
       end

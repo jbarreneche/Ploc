@@ -10,21 +10,19 @@ module Ploc::LanguageNode
       if node
         node.call(source_code)
       else
-        source_code.errors << "Expecting any of #{branch_nodes.inspect} but found #{current.inspect}"
+        report_found_unexpected_token(source_code, "Expecting any of #{branch_nodes.inspect}")
         nil
       end
     end
     def matches_first?(token)
-      branch_nodes.any?{|node| node.matches_first?(token)}
+      branch_nodes.any? {|node| node.matches_first?(token)}
     end
     def add_node(name, node)
       @branches << super
       node
     end
     def branch_nodes
-      @branch_nodes ||= @branches.map do |node_name| 
-        fetch_node(node_name)
-      end
+      @branch_nodes ||= @branches.map {|node_name| fetch_node(node_name)}
     end
     def inspect
       "<branch branches:#{@branches.inspect}>"

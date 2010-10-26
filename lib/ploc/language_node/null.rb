@@ -6,6 +6,9 @@ module Ploc::LanguageNode
     def matches_first?(token)
       true
     end
+    def optional?
+      true
+    end
     def inspect
       "<NullNode>"
     end

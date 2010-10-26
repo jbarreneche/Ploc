@@ -13,7 +13,7 @@ module Ploc::LanguageNode
         source_code.next_token
         current
       else
-        source_code.errors << "Expecting: #{self.matcher.inspect} but found unexpected Symbol (#{source_code.current_token.inspect})" 
+        report_found_unexpected_token(source_code, "Expecting #{self.matcher.inspect}")
         nil
       end
     end

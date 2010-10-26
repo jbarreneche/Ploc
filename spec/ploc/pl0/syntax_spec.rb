@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'stringio'
 require 'ploc/source_code'
 require 'ploc/pl0/syntax'
 require 'ploc/pl0/scanner'
@@ -30,6 +31,7 @@ module Ploc::PL0
         end.
       SRC
       errors = Syntax.parse_program program(src)
+      puts errors
       errors.should be_empty
     end
     context 'detecting simple errors' do

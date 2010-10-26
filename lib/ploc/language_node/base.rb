@@ -42,6 +42,12 @@ module Ploc::LanguageNode
       !optional?
     end
   private
+    def report_found_unexpected_token(source_code, expected_message)
+      report_error_on(source_code, "#{expected_message} but found #{source_code.current_token.inspect}")
+    end
+    def report_error_on(source_code, explanation)
+      source_code.errors << explanation
+    end
     def method_missing(meth, options = {}, &block)
       unless @initialization_finished
         add_node(nil, meth)
