@@ -1,3 +1,5 @@
+require 'forwardable'
+
 module Ploc
   class BinaryData
     INT_CONVERSION = 2 ** 32
@@ -18,6 +20,8 @@ module Ploc
     attr_reader :data
     alias :to_s :data
     alias :to_str :to_s
+    extend Forwardable
+    def_delegators :@data, :size
     def initialize(*values)
       @data = values.map do |value|
         case value

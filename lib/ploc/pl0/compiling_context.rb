@@ -5,6 +5,15 @@ require 'ploc/variable'
 require 'forwardable'
 module Ploc::PL0
   class CompilingContext < Ploc::SemanticContext
+    ASSEMBLY_INSTRUCTIONS = {
+      mov_eax_num: 'B8', mov_eax_edi_plus_offset: '8B 87',
+      mov_var_eax: '89 87',
+      # Simple compile instructions
+      push_eax: '50', pop_eax: '58', pop_ebx: '5B', xchg_eax_ebx: '93',
+      imul_ebx: 'F7 FB', idiv_ebx: 'F7 EB', add_eax_ebx: '01 D8', sub_eax_ebx: '29 D8'
+    }
+    SIMPLE_COMPILE_INSTRUCTIONS = %w[push_eax pop_eax pop_ebx xchg_eax_ebx imul_ebx idiv_ebx add_eax_ebx sub_eax_ebx]
+
     extend Forwardable
     attr_reader :output
     def_delegator :@operands, :<<, :push_operand
@@ -24,11 +33,11 @@ module Ploc::PL0
     def compile_mov_eax(value)
       case value
       when Fixnum
-        self.output_to_text_section Ploc::BinaryData.new("B8", value).to_s
+        self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:mov_eax_num], value
       when Ploc::Constant
         self.compile_mov_eax(value.value)
       when Ploc::Variable
-        self.output_to_text_section Ploc::BinaryData.new("8B 87", value.offset.value).to_s
+        self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:mov_eax_edi_plus_offset], value.offset.value
       end
     end
     def starting_text_address
@@ -38,37 +47,17 @@ module Ploc::PL0
       starting_text_address + @text_output_size
     end
     def output_to_text_section(*args)
-      args.each do |arg| 
-        @text_output_size += arg.size
-        self.output << arg
+      bin_data = Ploc::BinaryData.new(*args)
+      @text_output_size += bin_data.size
+      self.output << bin_data.to_s
+    end
+    SIMPLE_COMPILE_INSTRUCTIONS.each do |asm_instruction|
+      define_method("compile_#{asm_instruction}") do
+        self.output_to_text_section ASSEMBLY_INSTRUCTIONS[asm_instruction.to_sym]
       end
     end
-    def compile_push_eax
-      self.output_to_text_section Ploc::BinaryData.new("50").to_s
-    end
-    def compile_pop_eax
-      self.output_to_text_section Ploc::BinaryData.new("58").to_s
-    end
-    def compile_pop_ebx
-      self.output_to_text_section Ploc::BinaryData.new("5B").to_s
-    end
-    def compile_imul_ebx
-      self.output_to_text_section Ploc::BinaryData.new("F7 FB").to_s
-    end
-    def compile_idiv_ebx
-      self.output_to_text_section Ploc::BinaryData.new("F7 EB").to_s
-    end
-    def compile_add_eax_ebx
-      self.output_to_text_section Ploc::BinaryData.new("01 D8").to_s
-    end
-    def compile_sub_eax_ebx
-      self.output_to_text_section Ploc::BinaryData.new("29 D8").to_s
-    end
-    def compile_xchg_eax_ebx
-      self.output_to_text_section Ploc::BinaryData.new("93").to_s
-    end
     def compile_mov_var_eax(var)
-      self.output_to_text_section Ploc::BinaryData.new("89 87", var.offset.value).to_s
+      self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:mov_var_eax], var.offset.value
     end
     def compile_assign_var_with_stack(var)
       self.compile_pop_eax
