@@ -7,8 +7,12 @@ module Ploc::PL0
     its(:output) { should be_empty }
     let(:some_var) { Ploc::Variable.new(:foo, Ploc::Address.new(10)) }
     it 'should output header when initializing new program' do
-      pending('still not sure about how to implement fixups...')
-      subject.output.should_receive(:<<)
+      subject.output.should_receive(:<<).ordered
+      subject.output.should_receive(:write_later).ordered
+      subject.output.should_receive(:<<).ordered
+      subject.output.should_receive(:write_later).ordered
+      subject.output.should_receive(:<<).ordered
+      subject.initialize_new_program!
     end
     it 'should allow to push operands and retrieve them with pop' do
       subject.push_operand :operand

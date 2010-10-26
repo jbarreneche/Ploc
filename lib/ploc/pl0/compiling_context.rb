@@ -1,7 +1,7 @@
-# encoding: utf-8
 require 'ploc/semantic_context'
 require 'ploc/binary_data'
 require 'ploc/variable'
+require 'ploc/fixable_output'
 require 'forwardable'
 module Ploc::PL0
   class CompilingContext < Ploc::SemanticContext
@@ -27,15 +27,22 @@ module Ploc::PL0
     def_delegator :@boolean_operands, :last, :top_boolean_operand
     def initialize(source_code = nil)
       super(source_code)
-      @output = []
+      @output = Ploc::FixableOutput.new([])
       @operands = []
       @boolean_operands = []
       @text_output_size = 0
     end
     def initialize_new_program!
-      self.output << Ploc::BinaryData.new(File.read('support/elf_header'))
+      part_1, part_2, part_3 = File.read('support/elf_header').split(/\$\(\w+\)/)
+      self.output << part_1
+      @file_size_fixup = self.output.write_later(4)
+      self.output << part_2
+      @text_size_fixup = self.output.write_later(4)
+      self.output << part_3
     end
     def complete_program
+      @file_size_fixup.fix(Ploc::BinaryData.new(self.output.size))
+      @text_size_fixup.fix(Ploc::BinaryData.new(@text_output_size))
     end
     def compile_mov_eax(value)
       case value

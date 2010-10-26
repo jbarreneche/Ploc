@@ -29,6 +29,12 @@ module Ploc
         !value.is_a? Ploc::FixablePoint
       end
     end
+    def empty?
+      real_output.empty? && pending_outputs.empty?
+    end
+    def size
+      real_output.size + (pending_outputs.map(&:size).reduce(&:+) || 0)
+    end
   private
     def pending_outputs
       @pending_outputs

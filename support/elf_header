@@ -24,7 +24,7 @@
   00 80 04 08 # Virtual address where loaded
   00 80 04 08 # Absolute address where loaded
 
-  00 00 00 00 # File size <---
+  $(file_size) #
 
   14 04 00 00 # Memory size
   07 00 00 00 # Permissions (rwx)
@@ -67,7 +67,7 @@
   E0 80 04 08 # addr
   E0 00 00 00 # offset
 
-  00 00 00 00 # size <---
+  $(text_size) # size <---
 
   00 00 00 00 # link
   00 00 00 00 # info
