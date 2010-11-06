@@ -4,6 +4,7 @@ require 'ploc/variable'
 require 'ploc/fixable_output'
 require 'forwardable'
 require 'stringio'
+
 module Ploc::PL0
   class CompilingContext < Ploc::SemanticContext
     ASSEMBLY_INSTRUCTIONS = {
@@ -31,7 +32,7 @@ module Ploc::PL0
       @output = Ploc::FixableOutput.new(output)
       @operands = []
       @boolean_operands = []
-      @text_output_size = 0 # Initial size of .text due to I/O Rutines
+      @text_output_size = 0
       @pending_fix_jumps = []
     end
     def initialize_new_program!
@@ -47,7 +48,7 @@ module Ploc::PL0
       @edi_offset_fixup = self.write_later_in_text_section(4)
     end
     def complete_program
-      # bf 8a 84 04 08 e9 76 fe ff ff
+      # Jump to exit routine
       compile_jmp(starting_text_address + 0x220)
       @edi_offset_fixup.fix(current_text_address.to_bin)
       @file_size_fixup.fix(Ploc::BinaryData.new(self.output.size))

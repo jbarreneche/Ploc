@@ -1,3 +1,4 @@
+require 'stringio'
 require 'ploc/source_code'
 require 'ploc/validation_context'
 
@@ -10,8 +11,8 @@ module Ploc
       self.scanner_builder ||= attrs[:scanner_builder]
       self.context_builder ||= attrs[:context_builder]
     end
-    def compile(program)
-      new_compiling_context(program).tap do |compiler|
+    def compile(program, output = StringIO.new)
+      new_compiling_context(program, output).tap do |compiler|
         self.parser.parse :program, compiler.source_code
       end
     end
@@ -25,8 +26,8 @@ module Ploc
     end
 
   private
-    def new_compiling_context(program)
-      self.context_builder.call(new_source_code(program))
+    def new_compiling_context(program, output)
+      self.context_builder.call(new_source_code(program), output)
     end
     def new_validation_context(program)
       ValidationContext.new(new_source_code(program))

@@ -1,16 +1,36 @@
 #!/usr/bin/env ruby -w
 
 $:.unshift File.expand_path(File.join(File.dirname(__FILE__), *%w[.. lib]))
-require 'ploc/pl0'
-require 'stringio'
-# @s =  
-out = File.open('tsss.s', 'wb')
-Ploc::PL0::Language.context_builder= ->(source_code) { Ploc::PL0::CompilingContext.new(source_code, out) }
-e = Ploc::PL0::Language.compile StringIO.new(".")
-# out.close
-puts e.instance_variable_get("@pending_fix_jumps").inspect
-puts e.inspect
 
-# e.output.each do |o|
-#   puts o.inspect
-# end
+require 'ploc/pl0'
+require 'fileutils'
+
+if ARGV.empty?
+  STDERR.puts "** You must pass inform the source code filename" 
+  exit 1
+end
+
+unless File.readable?(filename = ARGV.shift)
+  STDERR.puts "** can't read file: #{filename}" 
+  exit 1
+end
+
+File.open(filename) do |input|
+  parts = filename.split('.')
+  if parts.size == 1
+    parts << "out" 
+  else
+    parts.pop
+  end
+  output_name = parts.join('.')
+  out = File.open(output_name, 'wb') rescue nil
+  output_name = output_name + ".out" unless out
+  out = File.open(output_name, 'wb') rescue nil
+  unless out
+    STDERR.puts "** can't write output to file: #{output_name}" 
+    exit 1
+  end
+  Ploc::PL0::Language.compile input, out
+  FileUtils.chmod 0755, output_name
+end
+
