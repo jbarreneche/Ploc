@@ -30,7 +30,8 @@ File.open(filename) do |input|
     STDERR.puts "** can't write output to file: #{output_name}" 
     exit 1
   end
-  Ploc::PL0::Language.compile input, out
+  context = Ploc::PL0::Language.compile input, out
+  puts "Errors: #{context.source_code.errors}"
   FileUtils.chmod 0755, output_name
 end
 
