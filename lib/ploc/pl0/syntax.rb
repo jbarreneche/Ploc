@@ -32,19 +32,17 @@ module Ploc::PL0
           sequence { _begin; multiple_sentences; _end }
           sequence(name: :branch) {_if; condition; _then; sentence}
           sequence(name: :loop)  {_while; condition; _do; sentence}
-          sequence do 
-            output; left_par
-            sequence(separator: :comma) { output_expression }
-            right_par
-          end
+          sequence { writeln; optional { output_params } }
+          sequence { write; output_params }
           sequence { readln; left_par; identifier; right_par }
         end
       end
     end
     define(:multiple_sentences, separator: :semicolon) { sentence }
-
-    define :output do
-      branch { write; writeln }
+    define :output_params do
+      left_par
+      sequence(separator: :comma) { output_expression } 
+      right_par
     end
     define :output_expression do
       branch { string; expression }
