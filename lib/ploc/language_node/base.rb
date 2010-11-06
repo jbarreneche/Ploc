@@ -8,6 +8,7 @@ module Ploc::LanguageNode
     def initialize(language, &block)
       ::Kernel.raise "Must provide a language" unless language
       @language = language
+      @initialization_finished = false
       super()
       instance_eval(&block) if block
       @initialization_finished = true

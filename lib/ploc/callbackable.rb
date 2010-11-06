@@ -3,7 +3,7 @@ module Ploc
     def initialize *args
       super
       @before_callbacks = []
-      @around_filters = Proc.new {|*args, &block| block.call(*args) }
+      @around_filters = Proc.new {|*ar_args, &block| block.call(*ar_args) }
       @after_callbacks = []
     end
     def add_before_callback(method_name = nil, &new_block)

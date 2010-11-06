@@ -10,30 +10,31 @@ module Ploc
       if any_fix_pending?
         pending_outputs << for_output
       else
-        self.real_output << for_output
+        real_output << for_output
       end
     end
     def write_later(size)
-      @any_fix_pending = true
       Ploc::FixablePoint.new(next_fix_id, self, size).tap {|fp| pending_outputs << fp }
     end
     def any_fix_pending?
       !pending_outputs.empty?
     end
     def fix_point(fixable_point, value)
-      @any_fix_pending = false
       idx = pending_outputs.index(fixable_point)
       pending_outputs[idx] = value
-      pending_outputs.drop_while do |value|
-        self.real_output << value unless Ploc::FixablePoint === value
-        !value.is_a? Ploc::FixablePoint
+      @pending_outputs = pending_outputs.drop_while do |out|
+        real_output << out unless Ploc::FixablePoint === out
+        !out.is_a? Ploc::FixablePoint
       end
     end
     def empty?
-      real_output.empty? && pending_outputs.empty?
+      size == 0
     end
     def size
       real_output.size + (pending_outputs.map(&:size).reduce(&:+) || 0)
+    end
+    def close
+      real_output.close
     end
   private
     def pending_outputs

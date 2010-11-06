@@ -6,7 +6,7 @@ module Ploc::LanguageNode
       super(language, &block)
     end
     def call_without_callbacks(source_code)
-      node = branch_nodes.detect {|node| node.matches_first?(source_code.current_token) }
+      node = branch_nodes.detect {|n| n.matches_first?(source_code.current_token) }
       if node
         node.call(source_code)
       else

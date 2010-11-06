@@ -52,8 +52,8 @@ module Ploc::LanguageNode
       new_sequence_tokens = call_sequence(source_code)
       separate_and_repeat(source_code, transversed_tokens.concat(new_sequence_tokens))
     end
-    def call_sequence(source_code)
-      _run_sequence_callbacks(source_code) do |source_code|
+    def call_sequence(sc)
+      _run_sequence_callbacks(sc) do |source_code|
         sequence_nodes.inject([]) do |sequence_tokens, node|
           sequence_tokens << node.call(source_code)
         end.compact
