@@ -1,0 +1,21 @@
+var K;
+procedure P;
+  procedure coma;
+  begin
+    write (',');
+    K := K + 1;
+    call P
+  end;
+begin
+  if K < 10 then
+    begin
+      write (K);
+      call coma;
+    end
+end;
+
+begin
+  K := 1;
+  call P;
+  writeln (10)
+end.

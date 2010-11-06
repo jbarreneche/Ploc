@@ -1,0 +1,26 @@
+var X, Y, Z;
+
+procedure MULTIPLICAR;
+var A, B;
+begin
+     A := X;
+     B := Y;
+     Z := 0;
+     if X < 0 then A := -A;
+     if Y < 0 then B := -B;
+     while B > 0 do
+         begin
+           if odd B then Z:= Z + A;
+           A := A * 2;
+           B := B / 2
+         end;
+     if X < 0 then Z:= -Z;
+     if Y < 0 then Z:= -Z
+end;
+
+Begin
+     write ('X: '); readLn (X);
+     write ('Y: '); readLn (Y);
+     call MULTIPLICAR;
+     writeLn ('X*Y=', Z);
+end.
