@@ -1,4 +1,3 @@
-require 'ploc/syntax'
 require 'ploc/language_node'
 
 module Ploc

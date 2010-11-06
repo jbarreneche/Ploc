@@ -12,6 +12,9 @@ module Ploc::PL0
       subject.output.should_receive(:<<).ordered
       subject.output.should_receive(:write_later).ordered
       subject.output.should_receive(:<<).ordered
+      subject.output.should_receive(:<<).ordered
+      subject.output.should_receive(:<<).ordered
+      subject.output.should_receive(:write_later).ordered
       subject.initialize_new_program!
     end
     it 'should allow to push operands and retrieve them with pop' do

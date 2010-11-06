@@ -3,11 +3,12 @@ require 'ploc/binary_data'
 require 'ploc/variable'
 require 'ploc/fixable_output'
 require 'forwardable'
+require 'stringio'
 module Ploc::PL0
   class CompilingContext < Ploc::SemanticContext
     ASSEMBLY_INSTRUCTIONS = {
       mov_eax_num: 'B8', mov_eax_edi_plus_offset: '8B 87',
-      mov_var_eax: '89 87',
+      mov_var_eax: '89 87', mov_edi: 'BF',
       jpo: '7B', je: '74', jne: '75', jg: '7F', jge: '7D', jl: '7C', jle: '7E',
       call: 'E8', jmp: 'E9',
       # Simple compile instructions
@@ -25,25 +26,33 @@ module Ploc::PL0
     def_delegator :@boolean_operands, :<<, :push_boolean_operand
     def_delegator :@boolean_operands, :pop, :pop_boolean_operand
     def_delegator :@boolean_operands, :last, :top_boolean_operand
-    def initialize(source_code = nil)
+    def initialize(source_code = nil, output = StringIO.new)
       super(source_code)
-      @output = Ploc::FixableOutput.new([])
+      @output = Ploc::FixableOutput.new(output)
       @operands = []
       @boolean_operands = []
-      @text_output_size = 0
+      @text_output_size = 0 # Initial size of .text due to I/O Rutines
       @pending_fix_jumps = []
     end
     def initialize_new_program!
       part_1, part_2, part_3 = File.read('support/elf_header').split(/\$\(\w+\)/)
-      self.output << part_1
+      self.output << Ploc::BinaryData.new(part_1)
       @file_size_fixup = self.output.write_later(4)
-      self.output << part_2
+      self.output << Ploc::BinaryData.new(part_2)
       @text_size_fixup = self.output.write_later(4)
-      self.output << part_3
+      self.output << Ploc::BinaryData.new(part_3)
+      # Starting text section
+      self.output_to_text_section File.read('support/input_output_rutines')
+      self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:mov_edi]
+      @edi_offset_fixup = self.write_later_in_text_section(4)
     end
     def complete_program
+      # bf 8a 84 04 08 e9 76 fe ff ff
+      compile_jmp(starting_text_address + 0x220)
+      @edi_offset_fixup.fix(current_text_address.to_bin)
       @file_size_fixup.fix(Ploc::BinaryData.new(self.output.size))
       @text_size_fixup.fix(Ploc::BinaryData.new(@text_output_size))
+      self.output.close
     end
     def compile_mov_eax(value)
       case value
@@ -56,10 +65,15 @@ module Ploc::PL0
       end
     end
     def starting_text_address
-      @starting_text_address ||= Ploc::Address.new(0x08048480)
+      # # 0x0390
+      @starting_text_address ||= Ploc::Address.new(0x080480e0)
     end
     def current_text_address
       starting_text_address + @text_output_size
+    end
+    def write_later_in_text_section(size)
+      @text_output_size += size
+      self.output.write_later(size)
     end
     def output_to_text_section(*args)
       bin_data = Ploc::BinaryData.new(*args)
@@ -122,7 +136,7 @@ module Ploc::PL0
     end
     def compile_fixable_jmp
       self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:jmp]
-      @pending_fix_jumps << [self.current_text_address, self.output.write_later(4)]
+      @pending_fix_jumps << [self.current_text_address, self.write_later_in_text_section(4)]
     end
     def compile_jmp(address)
       self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:jmp], (address - (current_text_address + 5)).value

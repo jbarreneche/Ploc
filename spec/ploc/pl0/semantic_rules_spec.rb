@@ -63,7 +63,7 @@ module Ploc::PL0
           Language.compile StringIO.new("VAR V, W;.")
         end
       end
-      context 'Assignation' do
+      context 'Assigns' do
         it 'retrieves the var from the context and updates its content' do
           @context.should_receive(:retrieve_variable).with("foo") { variable }.ordered
           @context.should_receive(:compile_mov_var_eax).with(variable).ordered
@@ -72,7 +72,7 @@ module Ploc::PL0
       end
     end
     describe "Procedures" do
-      context "Declaration" do
+      context "Simple Declaration" do
         it 'should allow to declare one procedure' do
           @context.stub(:current_text_address) { address }
           @context.should_receive(:declare_procedure).with(identifier("P"), address)
@@ -82,6 +82,15 @@ module Ploc::PL0
           @context.should_receive(:start_new_scope).ordered
           @context.should_receive(:close_scope).ordered
           Language.compile StringIO.new("PROCEDURE P;;.")
+        end
+      end
+      context "Embeded Declaration" do
+        it 'should create a new scope and then clear it out' do
+          @context.should_receive(:start_new_scope).ordered
+          @context.should_receive(:start_new_scope).ordered
+          @context.should_receive(:close_scope).ordered
+          @context.should_receive(:close_scope).ordered
+          Language.compile StringIO.new("PROCEDURE P; PROCEDURE S; ; ;.")
         end
       end
       context 'Calling' do
@@ -106,6 +115,7 @@ module Ploc::PL0
           Language.compile StringIO.new('while odd 3 then write("alumni").')
         end
         it 'jumps to the begining of the loop before fix jumping' do
+          @context.stub(:complete_program)
           @context.should_receive(:compile_jmp).with(an_instance_of(Ploc::Address)).ordered
           @context.should_receive(:fix_jmp).with(an_instance_of(Ploc::Address)).ordered
           Language.compile StringIO.new('while odd 3 then write("alumni").')

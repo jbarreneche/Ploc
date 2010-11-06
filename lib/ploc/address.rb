@@ -19,6 +19,9 @@ module Ploc
       return self.value == o.value if self.class === o
       super
     end
+    def to_s
+      self.value.to_s(16)
+    end
   private
     def extract_value(address_or_value)
       self.class === address_or_value ? address_or_value.value : address_or_value

@@ -1,4 +1,5 @@
 require 'ploc/syntax_builder'
+
 module Ploc
   class Syntax
     attr_accessor :nodes
