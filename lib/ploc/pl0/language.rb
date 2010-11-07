@@ -2,6 +2,7 @@ require 'ploc/language'
 
 require 'ploc/pl0/scanner'
 require 'ploc/pl0/semantic_rules'
+require 'ploc/pl0/validation_extensions'
 require 'ploc/pl0/compiling_context'
 
 module Ploc::PL0
