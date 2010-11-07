@@ -187,6 +187,9 @@ module Ploc::PL0
     def compile_write_line
       compile_call_io_function :writeln
     end
+    def source_code_has_errors!
+      terminate_compilation!
+    end
   private
     def text_output_size
       output.size - @text_size_start
@@ -202,6 +205,11 @@ module Ploc::PL0
     end
     def read(filename)
       File.read(File.expand_path(File.join(File.path(__FILE__), *%w[.. .. .. .. support], filename)))
+    end
+    def terminate_compilation!
+      vc = Ploc::ValidationContext.new(self.source_code)
+      vc.replace_scope(self.scope)
+      # self.source_code.context = 
     end
   end
 end

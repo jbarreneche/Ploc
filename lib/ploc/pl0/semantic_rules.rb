@@ -32,7 +32,7 @@ module Ploc::PL0
       source_code.context.compile_fixable_jmp
     end
     Syntax.after(:block_declarations) do |_, source_code|
-      source_code.context.fix_jmp 
+      source_code.context.fix_jmp
     end
     Syntax.after(:procedure_block) do |block_tokens, source_code|
       context = source_code.context

@@ -47,7 +47,7 @@ module Ploc::LanguageNode
           source_code = input_sequence(%w[1 s 1 1 s 1 s 1 s 1 s 1 s 1 s 1])
           errors = mock('Errors')
           source_code.stub(:errors) { errors }
-          errors.should_receive :<<
+          source_code.should_receive(:report_error)
           subject.call(source_code).should == %w[1 1 1 1 1 1 1 1 1]
         end
       end

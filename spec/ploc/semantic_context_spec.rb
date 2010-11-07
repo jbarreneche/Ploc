@@ -22,7 +22,7 @@ describe Ploc::SemanticContext do
       subject.declare(:variable, :foo).should == var_foo
     end
     it 'should not allow to redeclare existing declarations' do
-      errors.should_receive(:<<).with /foo/
+      source_code.should_receive(:report_error).with /foo/
       subject.declare(:constant, :foo, 100)
       subject.declare(:variable, :foo)
     end

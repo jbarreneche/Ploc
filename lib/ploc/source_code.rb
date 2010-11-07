@@ -13,5 +13,9 @@ module Ploc
     def next_token
       @current_token = scanner.next
     end
+    def report_error(something)
+      context.source_code_has_errors! if self.errors.empty? && context
+      @errors << something
+    end
   end
 end

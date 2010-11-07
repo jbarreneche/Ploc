@@ -47,7 +47,7 @@ module Ploc::LanguageNode
       report_error_on(source_code, "#{expected_message} but found #{source_code.current_token.inspect}")
     end
     def report_error_on(source_code, explanation)
-      source_code.errors << explanation
+      source_code.report_error explanation
     end
     def method_missing(meth, options = {}, &block)
       unless @initialization_finished

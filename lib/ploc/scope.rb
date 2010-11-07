@@ -21,7 +21,7 @@ module Ploc
       @parent
     end
     def declare(type, name, *args)
-      raise DuplicateDeclarationError if local_declarations.include? name
+      raise DuplicateDeclarationError if local_declarations.include? name.to_s.to_sym
       case type
       when :variable
         context.build_variable(name, *args).tap do |variable|

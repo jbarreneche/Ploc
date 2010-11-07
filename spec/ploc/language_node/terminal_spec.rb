@@ -18,17 +18,17 @@ module Ploc::LanguageNode
         subject.extend_to Fixnum, "2"
       end
       it 'skips token if current matches the extension' do
-        source_code = mock('SourceCode', current_token: 2, errors: errors)
+        source_code = mock('SourceCode', current_token: 2, errors: errors).as_null_object
         source_code.should_receive(:next_token)
         subject.call source_code
       end
       it 'reports the error to source_code' do
         source_code = mock('SourceCode', current_token: 2, next_token: 3, errors: errors)
-        errors.should_receive(:<<)
+        source_code.should_receive(:report_error)
         subject.call source_code
       end
       it 'doesnt skip token if current doesnt match any extension' do
-        source_code = mock('SourceCode', current_token: 3, errors: errors)
+        source_code = mock('SourceCode', current_token: 3, errors: errors).as_null_object
         source_code.should_not_receive(:next_token)
         subject.call source_code
       end

@@ -34,7 +34,7 @@ module Ploc
     def parse(entry_point, source_code)
       source_code.next_token
       send(entry_point, source_code)
-      source_code.errors << "Garbage found #{source_code.current_token.inspect}" if source_code.current_token
+      source_code.report_error "Garbage found #{source_code.current_token.inspect}" if source_code.current_token
       source_code.errors.empty?
     end
     def validate(entry_point, source_code)
