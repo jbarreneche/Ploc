@@ -69,7 +69,7 @@ module Ploc::PL0
       when Ploc::Constant
         self.compile_mov_eax(value.value)
       when Ploc::Variable
-        self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:mov_eax_edi_plus_offset], value.offset.value
+        self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:mov_eax_edi_plus_offset], value.offset
       end
     end
     def compile_mov_ecx(value)
@@ -102,7 +102,7 @@ module Ploc::PL0
       end
     end
     def compile_mov_var_eax(var)
-      self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:mov_var_eax], var.offset.value
+      self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:mov_var_eax], var.offset
     end
     def compile_assign_var_with_stack(var)
       self.compile_pop_eax
@@ -115,22 +115,22 @@ module Ploc::PL0
       self.compile_call_address relative_address(io_function_address(function))
     end
     def compile_call_address(address)
-      self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:call],  address.value
+      self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:call],  address
     end
     def compile_skip_jump(operand)
       case operand.token.downcase
       when 'odd'
         self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:jpo], "05"
       when '='
-        self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:je], "05"
+        self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:je ], "05"
       when '<>'
         self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:jne], "05"
       when '>'
-        self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:jg], "05"
+        self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:jg ], "05"
       when '>='
         self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:jge], "05"
       when '<'
-        self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:jl], "05"
+        self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:jl ], "05"
       when '<='
         self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:jle], "05"
       end
@@ -160,7 +160,7 @@ module Ploc::PL0
       @pending_fix_jumps.last.last
     end
     def compile_jmp(address)
-      self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:jmp], (address - (current_text_address + 5)).value
+      self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:jmp], address - (current_text_address + 5)
     end
     def compile_read_variable(variable)
       self.compile_call_io_function(:read_number)
@@ -176,7 +176,7 @@ module Ploc::PL0
       end
     end
     def compile_write_string(string)
-      compile_mov_ecx((current_text_address + 20).value) # 5 de mov_ecx + 5 de mov_edx + 5 call_io + 5 jmp over string
+      compile_mov_ecx current_text_address + 20 # 5 de mov_ecx + 5 de mov_edx + 5 call_io + 5 jmp over string
       compile_mov_edx string.size
       compile_call_io_function :write_str
       compile_jmp current_text_address + string.size + 5
