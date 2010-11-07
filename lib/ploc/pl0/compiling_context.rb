@@ -10,11 +10,12 @@ module Ploc::PL0
     ASSEMBLY_INSTRUCTIONS = {
       mov_eax_num: 'B8', mov_eax_edi_plus_offset: '8B 87',
       mov_var_eax: '89 87', mov_edi: 'BF',
+      mov_ecx_num: 'B9', mov_edx_num: 'BA',
       jpo: '7B', je: '74', jne: '75', jg: '7F', jge: '7D', jl: '7C', jle: '7E',
       call: 'E8', jmp: 'E9', ret: 'C3',
       # Simple compile instructions
       push_eax: '50', pop_eax: '58', pop_ebx: '5B', xchg_eax_ebx: '93', cmp_eax_ebx: '39 C3',
-      imul_ebx: 'F7 FB', idiv_ebx: 'F7 EB', add_eax_ebx: '01 D8', sub_eax_ebx: '29 D8',
+      imul_ebx: 'F7 EB', idiv_ebx: 'F7 FB', add_eax_ebx: '01 D8', sub_eax_ebx: '29 D8',
       test_eax_oddity: 'A8 01'
     }
     SIMPLE_COMPILE_INSTRUCTIONS = %w[ret push_eax pop_eax pop_ebx xchg_eax_ebx cmp_eax_ebx imul_ebx idiv_ebx add_eax_ebx sub_eax_ebx test_eax_oddity]
@@ -40,7 +41,7 @@ module Ploc::PL0
     def initialize_new_program!
       part_1, part_2, part_3 = File.read('support/elf_header').split(/\$\(\w+\)/)
       self.output << Ploc::BinaryData.new(part_1)
-      @file_size_fixup = self.output.write_later(4)
+      @file_size_fixup = self.output.write_later(8)
       self.output << Ploc::BinaryData.new(part_2)
       @text_size_fixup = self.output.write_later(4)
       self.output << Ploc::BinaryData.new(part_3)
@@ -53,8 +54,9 @@ module Ploc::PL0
       # Jump to exit routine
       compile_jmp(starting_text_address + 0x220)
       @edi_offset_fixup.fix(current_text_address.to_bin)
-      @file_size_fixup.fix(Ploc::BinaryData.new(self.output.size))
+      @file_size_fixup.fix(Ploc::BinaryData.new(self.output.size, self.output.size))
       @text_size_fixup.fix(Ploc::BinaryData.new(@text_output_size))
+      self.output << Ploc::BinaryData.new("00 00 00 00 " * (@var_sequence + 1))
       self.output.close
     end
     def compile_mov_eax(value)
@@ -66,6 +68,12 @@ module Ploc::PL0
       when Ploc::Variable
         self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:mov_eax_edi_plus_offset], value.offset.value
       end
+    end
+    def compile_mov_ecx(value)
+      self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:mov_ecx_num], value
+    end
+    def compile_mov_edx(value)
+      self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:mov_edx_num], value
     end
     def starting_text_address
       # # 0x0390
@@ -79,9 +87,7 @@ module Ploc::PL0
       self.output.write_later(size)
     end
     def output_to_text_section(*args)
-      bin_data = Ploc::BinaryData.new(*args)
-      @text_output_size += bin_data.size
-      self.output << bin_data.to_s
+      raw_output_to_text_section Ploc::BinaryData.new(*args)
     end
     SIMPLE_COMPILE_INSTRUCTIONS.each do |asm_instruction|
       define_method("compile_#{asm_instruction}") do
@@ -160,12 +166,30 @@ module Ploc::PL0
       jump_correction = (address - (jump_from  + 4)).value
       fixable_point.fix(Ploc::BinaryData.new(jump_correction))
     end
+    def compile_write_string(string)
+      compile_mov_ecx((current_text_address + 20).value) # 5 de mov_ecx + 5 de mov_edx + 5 call_io + 5 jmp over string
+      compile_mov_edx string.size
+      compile_call_io_function :write_str
+      compile_jmp current_text_address + string.size + 5
+      raw_output_to_text_section string
+    end
+    def compile_write_eax
+      compile_pop_eax
+      compile_call_io_function :write_number
+    end
+    def compile_write_line
+      compile_call_io_function :writeln
+    end
   private
     def relative_address(address)
       address - (current_text_address + 5)
     end
     def io_function_address(function)
       starting_text_address + PRECOMPILED_FUNCTIONS[function]
+    end
+    def raw_output_to_text_section(bin_data)
+      @text_output_size += bin_data.size
+      self.output << bin_data.to_s
     end
   end
 end

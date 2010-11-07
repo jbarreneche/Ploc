@@ -116,5 +116,16 @@ module Ploc::PL0
       variable = context.retrieve_variable(variable_name.token)
       context.compile_read_variable(variable)
     end
+    Syntax.after(:output_expression) do |output, source_code|
+      context = source_code.context
+      if Ploc::Token::String === output.first
+        context.compile_write_string(output.first.token)
+      else
+        context.compile_write_eax
+      end
+    end
+    Syntax.after(:output_line) do |writeln, source_code|
+      source_code.context.compile_write_line
+    end
   end
 end

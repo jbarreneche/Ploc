@@ -77,11 +77,11 @@ module Ploc::PL0
         subject.compile_pop_ebx
       end
       it 'should output imul_ebx as F7 FB' do
-        subject.output.should_receive(:<<).with("\xF7\xFB")
+        subject.output.should_receive(:<<).with("\xF7\xEB")
         subject.compile_imul_ebx
       end
       it 'should output idiv_ebx as F7 EB' do
-        subject.output.should_receive(:<<).with("\xF7\xEB")
+        subject.output.should_receive(:<<).with("\xF7\xFB")
         subject.compile_idiv_ebx
       end
       it 'should output add_eax_ebx as 01 D8' do

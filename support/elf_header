@@ -26,7 +26,7 @@
 
   $(file_size) #
 
-  8a 04 00 00 # Memory size
+  # .... # Memory size
   07 00 00 00 # Permissions (rwx)
   00 10 00 00 # Alignment required
 
