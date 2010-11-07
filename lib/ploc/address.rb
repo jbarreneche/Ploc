@@ -1,8 +1,7 @@
-require 'ploc/binary_data'
-
 module Ploc
   class Address
     attr_reader :value
+    alias :to_i :value
     def initialize(value)
       @value = value
     end
@@ -12,12 +11,15 @@ module Ploc
     def +(address_or_value)
       self.class.new(value + extract_value(address_or_value))
     end
-    def to_bin
-      @bin_value ||= BinaryData.new(self.value)
-    end
     def ==(o)
-      return self.value == o.value if self.class === o
-      super
+      case o
+      when self.class
+        self.value == o.value
+      when Fixnum
+        self.value == o
+      else
+        super
+      end
     end
     def to_s
       self.value.to_s(16)
