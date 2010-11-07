@@ -10,4 +10,10 @@ describe Ploc::FixablePoint do
       subject.fix('1234')
     end
   end
+  describe '#destroy' do
+    it 'notifies its output to remove him from the stream' do
+      output.should_receive(:remove_fixpoint).with(subject)
+      subject.destroy
+    end
+  end
 end

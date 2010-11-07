@@ -22,10 +22,11 @@ module Ploc
     def fix_point(fixable_point, value)
       idx = pending_outputs.index(fixable_point)
       pending_outputs[idx] = value
-      @pending_outputs = pending_outputs.drop_while do |out|
-        real_output << out unless Ploc::FixablePoint === out
-        !out.is_a? Ploc::FixablePoint
-      end
+      flush_pending_outputs
+    end
+    def remove_fixpoint(fixable_point)
+      pending_outputs.delete(fixable_point)
+      flush_pending_outputs
     end
     def empty?
       size == 0
@@ -37,6 +38,12 @@ module Ploc
       real_output.close
     end
   private
+    def flush_pending_outputs
+      @pending_outputs = pending_outputs.drop_while do |out|
+        real_output << out unless Ploc::FixablePoint === out
+        !out.is_a? Ploc::FixablePoint
+      end
+    end
     def pending_outputs
       @pending_outputs
     end

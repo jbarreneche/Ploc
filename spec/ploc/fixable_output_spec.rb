@@ -26,12 +26,22 @@ describe Ploc::FixableOutput do
       output_stream.should_not_receive(:<<)
       subject << 'output'
     end
-    it 'after fixing the point it outputs pending outputs' do
-      fix_point = subject.write_later(4)
-      subject << 'output'
-      output_stream.should_receive(:<<).with('1234').ordered
-      output_stream.should_receive(:<<).with('output').ordered
-      fix_point.fix("1234")
+    describe 'fixing the fixpoint' do
+      it 'outputs the fix and pending outputs' do
+        fix_point = subject.write_later(4)
+        subject << 'output'
+        output_stream.should_receive(:<<).with('1234').ordered
+        output_stream.should_receive(:<<).with('output').ordered
+        fix_point.fix("1234")
+      end
+    end
+    describe 'destroying the fixpoint' do
+      it 'outputs pending outputs but not the fixpoint' do
+        fix_point = subject.write_later(4)
+        subject << 'output'
+        output_stream.should_receive(:<<).with('output').ordered
+        fix_point.destroy
+      end
     end
   end
   context 'with multiple write later' do
