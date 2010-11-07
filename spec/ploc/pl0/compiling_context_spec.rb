@@ -146,6 +146,7 @@ module Ploc::PL0
     end
     describe 'compiling fixable jumps' do
       it 'outputs jump and delay the addres where to jump' do
+        subject.stub(:text_output_size) { 20 }
         subject.output.should_receive(:<<).with("\xE9")
         subject.output.should_receive(:write_later).with(4)
         subject.compile_fixable_jmp

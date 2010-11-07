@@ -14,11 +14,13 @@ module Ploc::PL0
       Language.context_builder.stub(:call) {|source_code| @context.source_code=(source_code); source_code.context=(@context) }
     end
     it 'notifies the begining of the program' do
+      @context.stub(:text_output_size) { 20 }
       @context.should_receive(:initialize_new_program!)
       @context.stub(:complete_program)
       Language.compile empty_program
     end
     it 'notifies the program completition after the begining' do
+      @context.stub(:text_output_size) { 20 }
       @context.should_receive(:initialize_new_program!).ordered
       @context.should_receive(:complete_program).ordered
       Language.compile empty_program

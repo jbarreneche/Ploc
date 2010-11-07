@@ -35,7 +35,7 @@ module Ploc::PL0
       @output = Ploc::FixableOutput.new(output)
       @operands = []
       @boolean_operands = []
-      @text_output_size = 0
+      @text_start_address = 0
       @pending_fix_jumps = []
     end
     def initialize_new_program!
@@ -45,7 +45,9 @@ module Ploc::PL0
       self.output << Ploc::BinaryData.new(part_2)
       @text_size_fixup = self.output.write_later(4)
       self.output << Ploc::BinaryData.new(part_3)
+
       # Starting text section
+      @text_size_start = self.output.size
       self.output_to_text_section File.read('support/input_output_rutines')
       self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:mov_edi]
       @edi_offset_fixup = self.write_later_in_text_section(4)
@@ -55,8 +57,8 @@ module Ploc::PL0
       compile_jmp(starting_text_address + 0x220)
       @edi_offset_fixup.fix(current_text_address.to_bin)
       @file_size_fixup.fix(Ploc::BinaryData.new(self.output.size, self.output.size))
-      @text_size_fixup.fix(Ploc::BinaryData.new(@text_output_size))
-      self.output << Ploc::BinaryData.new("00 00 00 00 " * (@var_sequence + 1))
+      @text_size_fixup.fix(Ploc::BinaryData.new(text_output_size))
+      self.output << Ploc::BinaryData.new("00 00 00 00\n" * (@var_sequence + 1))
       self.output.close
     end
     def compile_mov_eax(value)
@@ -80,10 +82,9 @@ module Ploc::PL0
       @starting_text_address ||= Ploc::Address.new(0x080480e0)
     end
     def current_text_address
-      starting_text_address + @text_output_size
+      starting_text_address + text_output_size
     end
     def write_later_in_text_section(size)
-      @text_output_size += size
       self.output.write_later(size)
     end
     def output_to_text_section(*args)
@@ -188,6 +189,9 @@ module Ploc::PL0
       compile_call_io_function :writeln
     end
   private
+    def text_output_size
+      output.size - @text_size_start
+    end
     def relative_address(address)
       address - (current_text_address + 5)
     end
@@ -195,7 +199,6 @@ module Ploc::PL0
       starting_text_address + PRECOMPILED_FUNCTIONS[function]
     end
     def raw_output_to_text_section(bin_data)
-      @text_output_size += bin_data.size
       self.output << bin_data.to_s
     end
   end
