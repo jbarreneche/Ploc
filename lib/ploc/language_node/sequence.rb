@@ -3,6 +3,7 @@ module Ploc::LanguageNode
     def initialize(language, options = {}, &block)
       @options = options
       @options[:repeat] ||= !!(@options[:separator] || @options[:terminator])
+      @options[:weak_separator] ||= false
       @sequence = []
       @after_each_callbacks = []
       super(language, &block)
@@ -27,6 +28,12 @@ module Ploc::LanguageNode
     end
     def inspect
       "<Node sequence:#{@sequence.inspect} options:#{@options.inspect}>"
+    end
+    def separator_is_weak?
+      @options[:weak_separator]
+    end
+    def separator_is_weak!
+      @options[:weak_separator] ||= true
     end
   private
     def separator_node
@@ -64,7 +71,12 @@ module Ploc::LanguageNode
         separator_node.call(source_code) if separator_node
         recursive_call(source_code, transversed_tokens)
       else
-        transversed_tokens
+        if separator_is_weak? && matches_first?(source_code.current_token)
+          report_found_unexpected_token(source_code, "Expecting separator #{separator_node.inspect}")
+          recursive_call(source_code, transversed_tokens)
+        else
+          transversed_tokens
+        end
       end
     end
     def call_terminator(source_code)
