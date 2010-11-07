@@ -16,9 +16,9 @@ module Ploc::PL0
       # Simple compile instructions
       push_eax: '50', pop_eax: '58', pop_ebx: '5B', xchg_eax_ebx: '93', cmp_eax_ebx: '39 C3',
       imul_ebx: 'F7 EB', idiv_ebx: 'F7 FB', add_eax_ebx: '01 D8', sub_eax_ebx: '29 D8',
-      test_eax_oddity: 'A8 01'
+      test_eax_oddity: 'A8 01', neg_eax: 'F7 D8', cltd: '99'
     }
-    SIMPLE_COMPILE_INSTRUCTIONS = %w[ret push_eax pop_eax pop_ebx xchg_eax_ebx cmp_eax_ebx imul_ebx idiv_ebx add_eax_ebx sub_eax_ebx test_eax_oddity]
+    SIMPLE_COMPILE_INSTRUCTIONS = %w[ret push_eax pop_eax pop_ebx xchg_eax_ebx cmp_eax_ebx imul_ebx idiv_ebx add_eax_ebx sub_eax_ebx test_eax_oddity neg_eax cltd]
     PRECOMPILED_FUNCTIONS = {
       write_str: 0x0090, writeln: 0x00a0, write_number: 0x00b0, exit_prg: 0x0220, read_number: 0x0230
     }
@@ -89,6 +89,11 @@ module Ploc::PL0
     def output_to_text_section(*args)
       raw_output_to_text_section Ploc::BinaryData.new(*args)
     end
+    def compile_negate_stack
+      compile_pop_eax
+      compile_neg_eax
+      compile_push_eax
+    end
     SIMPLE_COMPILE_INSTRUCTIONS.each do |asm_instruction|
       define_method("compile_#{asm_instruction}") do
         self.output_to_text_section ASSEMBLY_INSTRUCTIONS[asm_instruction.to_sym]
@@ -135,6 +140,8 @@ module Ploc::PL0
       when '*'
         self.compile_imul_ebx
       when '/'
+        self.compile_xchg_eax_ebx
+        self.compile_cltd
         self.compile_idiv_ebx
       when '+'
         self.compile_add_eax_ebx

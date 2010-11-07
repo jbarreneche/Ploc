@@ -127,5 +127,13 @@ module Ploc::PL0
     Syntax.after(:output_line) do |writeln, source_code|
       source_code.context.compile_write_line
     end
+    Syntax.after(:first_expresion) do |first_exp, source_code|
+      sign = first_exp.first.first
+      if Ploc::Token::Operand === sign
+        context = source_code.context
+        context.pop_operand
+        context.compile_negate_stack if sign.token == '-'
+      end
+    end
   end
 end
