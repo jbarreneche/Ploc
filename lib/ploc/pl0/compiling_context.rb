@@ -38,7 +38,7 @@ module Ploc::PL0
       @pending_fix_jumps = []
     end
     def initialize_new_program!
-      part_1, part_2, part_3 = File.read('support/elf_header').split(/\$\(\w+\)/)
+      part_1, part_2, part_3 = read('elf_header').split(/\$\(\w+\)/)
       self.output << Ploc::BinaryData.new(part_1)
       @file_size_fixup = self.output.write_later(8)
       self.output << Ploc::BinaryData.new(part_2)
@@ -47,7 +47,7 @@ module Ploc::PL0
 
       # Starting text section
       @text_size_start = self.output.size
-      self.output_to_text_section File.read('support/input_output_rutines')
+      self.output_to_text_section read('input_output_rutines')
       self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:mov_edi]
       @edi_offset_fixup = self.write_later_in_text_section(4)
     end
@@ -199,6 +199,9 @@ module Ploc::PL0
     end
     def raw_output_to_text_section(bin_data)
       self.output << bin_data.to_s
+    end
+    def read(filename)
+      File.read(File.expand_path(File.join(File.path(__FILE__), *%w[.. .. .. .. support], filename)))
     end
   end
 end
