@@ -1,5 +1,5 @@
 require 'forwardable'
-
+require 'ploc/address'
 module Ploc
   class BinaryData
     INT_CONVERSION = 2 ** 32
@@ -29,6 +29,8 @@ module Ploc
           self.class.parse_string(value)
         when Fixnum
           self.class.parse_int(value)
+        when Ploc::Address
+          self.class.parse_int(value.value)
         else
           ""
         end

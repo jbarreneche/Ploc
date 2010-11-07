@@ -6,9 +6,6 @@ describe Ploc::Address do
   it 'has a value' do
     subject.value.should == 23 
   end
-  it 'can be turn into binary data' do
-    subject.to_bin.should == "\x17\x00\x00\x00"
-  end
   it 'calculates distance between other address' do
     other_address = Ploc::Address.new(50)
     new_address = subject - other_address
