@@ -1,7 +1,8 @@
-require 'ploc/semantic_context'
 require 'ploc/binary_data'
-require 'ploc/variable'
 require 'ploc/fixable_output'
+require 'ploc/output_optimizer'
+require 'ploc/semantic_context'
+require 'ploc/variable'
 require 'forwardable'
 require 'stringio'
 
@@ -33,9 +34,9 @@ module Ploc::PL0
     def initialize(source_code = nil, output = StringIO.new)
       super(source_code)
       @output = Ploc::FixableOutput.new(output)
+      # @output = Ploc::FixableOutput.new(Ploc::OutputOptimizer.new(output))
       @operands = []
       @boolean_operands = []
-      @text_start_address = 0
       @pending_fix_jumps = []
     end
     def initialize_new_program!
@@ -54,8 +55,8 @@ module Ploc::PL0
     end
     def complete_program
       # Jump to exit routine
-      compile_jmp(starting_text_address + 0x220)
-      @edi_offset_fixup.fix(current_text_address.to_bin)
+      compile_jmp(io_function_address(:exit_prg))
+      @edi_offset_fixup.fix(Ploc::BinaryData.new(current_text_address))
       @file_size_fixup.fix(Ploc::BinaryData.new(self.output.size, self.output.size))
       @text_size_fixup.fix(Ploc::BinaryData.new(text_output_size))
       self.output << Ploc::BinaryData.new("00 00 00 00\n" * (@var_sequence + 1))
@@ -155,8 +156,8 @@ module Ploc::PL0
       self.compile_push_eax
     end
     def compile_fixable_jmp
-      self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:jmp]
-      @pending_fix_jumps << [self.current_text_address, self.write_later_in_text_section(4)]
+      @pending_fix_jumps << [self.current_text_address, self.write_later_in_text_section(5)]
+      @pending_fix_jumps.last.last
     end
     def compile_jmp(address)
       self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:jmp], (address - (current_text_address + 5)).value
@@ -165,14 +166,14 @@ module Ploc::PL0
       self.compile_call_io_function(:read_number)
       self.compile_mov_var_eax(variable)
     end
-    # def compile_write(variable)
-    #   self.compile_call_io_function(:read_number)
-    #   self.compile_mov_var_eax(variable)
-    # end
     def fix_jmp(address = current_text_address)
       jump_from, fixable_point = @pending_fix_jumps.pop
-      jump_correction = (address - (jump_from  + 4)).value
-      fixable_point.fix(Ploc::BinaryData.new(jump_correction))
+      jump_correction = address - (jump_from  + 5)
+      if jump_correction != 0
+        fixable_point.fix(Ploc::BinaryData.new(ASSEMBLY_INSTRUCTIONS[:jmp], jump_correction))
+      else
+        fixable_point.destroy
+      end
     end
     def compile_write_string(string)
       compile_mov_ecx((current_text_address + 20).value) # 5 de mov_ecx + 5 de mov_edx + 5 call_io + 5 jmp over string

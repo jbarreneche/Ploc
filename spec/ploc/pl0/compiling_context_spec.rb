@@ -144,12 +144,27 @@ module Ploc::PL0
         end
       end
     end
-    describe 'compiling fixable jumps' do
-      it 'outputs jump and delay the addres where to jump' do
-        subject.stub(:text_output_size) { 20 }
-        subject.output.should_receive(:<<).with("\xE9")
-        subject.output.should_receive(:write_later).with(4)
-        subject.compile_fixable_jmp
+    context 'fixable jumps' do
+      describe 'compiling fixable jumps' do
+        it 'saves 5 bytes in output' do
+          subject.stub(:text_output_size) { 20 }
+          subject.output.should_receive(:write_later).with(5)
+          subject.compile_fixable_jmp
+        end
+        it 'fixes jump to previous address minus current address, when they are different' do
+          subject.stub(:current_text_address) { 10 }
+          fixpoint = subject.compile_fixable_jmp
+          subject.stub(:current_text_address) { 40 }
+          fixpoint.should_receive(:fix).with(Ploc::BinaryData.new('E9', 40 - (10 + 5)))
+          subject.fix_jmp
+        end
+        it 'destroys jump to next address ie. E9 00 00 00 00' do
+          subject.stub(:current_text_address) { 10 }
+          fixpoint = subject.compile_fixable_jmp
+          subject.stub(:current_text_address) { 10 + 5 }
+          fixpoint.should_receive(:destroy)
+          subject.fix_jmp
+        end
       end
     end
     def token(str)
