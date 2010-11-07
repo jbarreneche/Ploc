@@ -28,8 +28,15 @@ module Ploc::PL0
       context = source_code.context
       context.start_new_scope
     end
+    Syntax.before(:block) do |source_code|
+      source_code.context.compile_fixable_jmp
+    end
+    Syntax.after(:block_declarations) do |_, source_code|
+      source_code.context.fix_jmp 
+    end
     Syntax.after(:procedure_block) do |block_tokens, source_code|
       context = source_code.context
+      context.compile_ret
       context.close_scope
     end
     Syntax.after(:ration) do |operand, source_code|
@@ -102,6 +109,12 @@ module Ploc::PL0
       block.call(source_code)
       context.compile_jmp(condition_address)
       context.fix_jmp(context.current_text_address)
+    end
+    Syntax.after(:input) do |read_tokens, source_code|
+      _, _, variable_name, _ = read_tokens
+      context = source_code.context
+      variable = context.retrieve_variable(variable_name.token)
+      context.compile_read_variable(variable)
     end
   end
 end

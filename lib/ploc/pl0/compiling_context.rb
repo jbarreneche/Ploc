@@ -11,14 +11,16 @@ module Ploc::PL0
       mov_eax_num: 'B8', mov_eax_edi_plus_offset: '8B 87',
       mov_var_eax: '89 87', mov_edi: 'BF',
       jpo: '7B', je: '74', jne: '75', jg: '7F', jge: '7D', jl: '7C', jle: '7E',
-      call: 'E8', jmp: 'E9',
+      call: 'E8', jmp: 'E9', ret: 'C3',
       # Simple compile instructions
       push_eax: '50', pop_eax: '58', pop_ebx: '5B', xchg_eax_ebx: '93', cmp_eax_ebx: '39 C3',
       imul_ebx: 'F7 FB', idiv_ebx: 'F7 EB', add_eax_ebx: '01 D8', sub_eax_ebx: '29 D8',
       test_eax_oddity: 'A8 01'
     }
-    SIMPLE_COMPILE_INSTRUCTIONS = %w[push_eax pop_eax pop_ebx xchg_eax_ebx cmp_eax_ebx imul_ebx idiv_ebx add_eax_ebx sub_eax_ebx test_eax_oddity]
-
+    SIMPLE_COMPILE_INSTRUCTIONS = %w[ret push_eax pop_eax pop_ebx xchg_eax_ebx cmp_eax_ebx imul_ebx idiv_ebx add_eax_ebx sub_eax_ebx test_eax_oddity]
+    PRECOMPILED_FUNCTIONS = {
+      write_str: 0x0090, writeln: 0x00a0, write_number: 0x00b0, exit_prg: 0x0220, read_number: 0x0230
+    }
     extend Forwardable
     attr_reader :output
     def_delegator :@operands, :<<, :push_operand
@@ -94,7 +96,10 @@ module Ploc::PL0
       self.compile_mov_var_eax(var)
     end
     def compile_call_procedure(procedure)
-      self.compile_call_address procedure.address - (current_text_address + 5)
+      self.compile_call_address relative_address(procedure.address)
+    end
+    def compile_call_io_function(function)
+      self.compile_call_address relative_address(io_function_address(function))
     end
     def compile_call_address(address)
       self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:call],  address.value
@@ -142,10 +147,25 @@ module Ploc::PL0
     def compile_jmp(address)
       self.output_to_text_section ASSEMBLY_INSTRUCTIONS[:jmp], (address - (current_text_address + 5)).value
     end
-    def fix_jmp(address)
+    def compile_read_variable(variable)
+      self.compile_call_io_function(:read_number)
+      self.compile_mov_var_eax(variable)
+    end
+    # def compile_write(variable)
+    #   self.compile_call_io_function(:read_number)
+    #   self.compile_mov_var_eax(variable)
+    # end
+    def fix_jmp(address = current_text_address)
       jump_from, fixable_point = @pending_fix_jumps.pop
-      jump_correction = (jump_from - address + 5).value
+      jump_correction = (address - (jump_from  + 4)).value
       fixable_point.fix(Ploc::BinaryData.new(jump_correction))
+    end
+  private
+    def relative_address(address)
+      address - (current_text_address + 5)
+    end
+    def io_function_address(function)
+      starting_text_address + PRECOMPILED_FUNCTIONS[function]
     end
   end
 end

@@ -42,10 +42,10 @@
   00 00 00 bb 0a 00 00 00  f7 fb 52 e8 98 fe ff ff
   58 e8 92 fe ff ff c3 90  90 90 90 90 90 90 90 90
 
-  # 0x220: finaliza el programa.
+  # 0x0220: finaliza el programa.
   b8 01 00 00 00 bb 00 00  00 00 cd 80 90 90 90 90
 
-  # 0x230: lee por consola un número entero y lo deja guardado en EAX.
+  # 0x0230: lee por consola un número entero y lo deja guardado en EAX.
   b9 00 00 00 00 b3 03 51  53 e8 de fd ff ff 5b 59
   3c 0a 0f 84 34 01 00 00  3c 7f 0f 84 94 00 00 00
   3c 2d 0f 84 09 01 00 00  3c 30 7c db 3c 39 7f d7

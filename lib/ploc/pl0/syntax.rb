@@ -6,7 +6,7 @@ module Ploc::PL0
     define :program do
       block; dot
     end
-    define :block do
+    define :block_declarations do
       optional { const; declare_constants }
       optional { var; declare_variables }
       optional(repeat: true, name: :declare_procedure) do 
@@ -14,6 +14,9 @@ module Ploc::PL0
         procedure_block
         semicolon
       end
+    end
+    define :block do
+      block_declarations
       sentence
     end
     # Alias block as procedure_block to control diferent semantics
@@ -27,14 +30,14 @@ module Ploc::PL0
     define :sentence do
       optional do
         branch do
+          sequence { _begin; multiple_sentences; _end }
           sequence(name: :assignment) { identifier; assign; expression}
           sequence(name: :call_procedure) { _call; identifier }
-          sequence { _begin; multiple_sentences; _end }
           sequence(name: :branch) {_if; condition; _then; sentence}
-          sequence(name: :loop)  {_while; condition; _do; sentence}
-          sequence { writeln; optional { output_params } }
-          sequence { write; output_params }
-          sequence { readln; left_par; identifier; right_par }
+          sequence(name: :loop)   {_while; condition; _do; sentence}
+          sequence(name: :output_line) { writeln; optional { output_params } }
+          sequence(name: :output)   { write; output_params }
+          sequence(name: :input)  { readln; left_par; identifier; right_par }
         end
       end
     end
