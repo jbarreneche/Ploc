@@ -1,6 +1,7 @@
 require 'ploc/fixable_point'
 module Ploc
   class FixableOutput < Struct.new(:real_output)
+    PUSH_POP = ["\x50", "\x58"]
     def initialize(real_output)
       super
       @pending_outputs = []
@@ -8,7 +9,11 @@ module Ploc
     end
     def <<(for_output)
       if any_fix_pending?
-        pending_outputs << for_output
+        if PUSH_POP.include?(for_output) && PUSH_POP.include?(pending_outputs.last) && pending_outputs.last != for_output
+          pending_outputs.pop
+        else
+          pending_outputs << for_output
+        end
       else
         real_output << for_output
       end

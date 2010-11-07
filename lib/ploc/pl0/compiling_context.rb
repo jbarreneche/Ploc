@@ -1,6 +1,5 @@
 require 'ploc/binary_data'
 require 'ploc/fixable_output'
-require 'ploc/output_optimizer'
 require 'ploc/semantic_context'
 require 'ploc/variable'
 require 'forwardable'
@@ -34,7 +33,6 @@ module Ploc::PL0
     def initialize(source_code = nil, output = StringIO.new)
       super(source_code)
       @output = Ploc::FixableOutput.new(output)
-      # @output = Ploc::FixableOutput.new(Ploc::OutputOptimizer.new(output))
       @operands = []
       @boolean_operands = []
       @pending_fix_jumps = []
