@@ -116,17 +116,17 @@ module Ploc::PL0
         it 'fixes previous jump' do
           @context.should_receive(:fix_jmp) # Fixing init of program
           @context.should_receive(:fix_jmp)
-          Language.compile StringIO.new('while odd 3 then write("alumni").')
+          Language.compile StringIO.new('while odd 3 do write("alumni").')
         end
         it 'jumps to the begining of the loop before fix jumping' do
           @context.stub(:complete_program)
           @context.should_receive(:compile_fixable_jmp).ordered # Start of program
           @context.should_receive(:fix_jmp).ordered # Fixing init of program
           @context.should_receive(:compile_fixable_jmp).ordered
-          @context.should_receive(:compile_jmp).with(an_instance_of(Ploc::Address)).ordered
+          @context.should_receive(:compile_jmp).ordered
           @context.should_receive(:fix_jmp).ordered
           # @context.should_receive(:fix_jmp).ordered
-          Language.compile StringIO.new('while odd 3 then write("alumni").')
+          Language.compile StringIO.new('while odd 3 do write(3).')
         end
       end
     end

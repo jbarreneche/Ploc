@@ -66,13 +66,14 @@ module Ploc::PL0
     end
     Syntax.after_each(:more_expressions) do |_, source_code|
       context = source_code.context
-      raise "Ups, top operand isn't a sign :S" unless context.top_operand && Ploc::Token::Operand::SIGNS.include?(context.top_operand.token)
+      # raise "Ups, top operand isn't a sign :S" unless context.top_operand && Ploc::Token::Operand::SIGNS.include?(context.top_operand.token)
       context.compile_operate_with_stack(context.pop_operand)
     end
-    Syntax.after(:assignment) do |assignment, source_code|
-      assigned_var_token, _ = assignment
+    Syntax.around(:assignment) do |source_code, &block|
+      assigned_variable = source_code.context.retrieve_variable(source_code.current_token.token)
+      
+      block.call(source_code)
       context = source_code.context
-      assigned_variable = context.retrieve_variable(assigned_var_token.token)
       context.compile_assign_var_with_stack(assigned_variable)
     end
     Syntax.after(:call_procedure) do |(call, procedure_identifier), source_code|
@@ -104,17 +105,20 @@ module Ploc::PL0
       context.fix_jmp(context.current_text_address)
     end
     Syntax.around(:loop) do |source_code, &block|
-      context = source_code.context
-      condition_address = context.current_text_address
+      condition_address = source_code.context.current_text_address
       block.call(source_code)
+      context = source_code.context
       context.compile_jmp(condition_address)
-      context.fix_jmp(context.current_text_address)
+      context.fix_jmp
     end
     Syntax.after(:input) do |read_tokens, source_code|
       _, _, variable_name, _ = read_tokens
-      context = source_code.context
-      variable = context.retrieve_variable(variable_name.token)
-      context.compile_read_variable(variable)
+      if variable_name
+        # TODO... cuando el read estaba mal formado
+        context = source_code.context
+        variable = context.retrieve_variable(variable_name.token)
+        context.compile_read_variable(variable)
+      end
     end
     Syntax.after(:output_expression) do |output, source_code|
       context = source_code.context

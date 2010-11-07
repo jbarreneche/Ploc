@@ -209,7 +209,6 @@ module Ploc::PL0
     def terminate_compilation!
       vc = Ploc::ValidationContext.new(self.source_code)
       vc.replace_scope(self.scope)
-      # self.source_code.context = 
     end
   end
 end

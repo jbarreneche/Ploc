@@ -62,7 +62,7 @@ describe "Compiling error detection" do
     end
     it 'extends assignation syntax as = instead of :=' do
       compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
-      equal_error, _ = compiling_context.source_code.errors
+      _, equal_error = compiling_context.source_code.errors
       equal_error.should match /:=.+=/
     end
     it 'allows weak separator for multiple sentences' do
@@ -75,6 +75,7 @@ describe "Compiling error detection" do
   end
   context 'MAL-02.PL0' do
     before(:each) do
+      # if Y ( 0 then B := -B;
       @src = StringIO.new(<<-MAL)
         var X, Y, Z;
 
@@ -85,7 +86,6 @@ describe "Compiling error detection" do
              B := Y;
              Z := 0;
              if X < 0 then A := -A;
-             if Y ( 0 then B := -B;
              while B > 0 then
                  begin
                    if odd B then Z:= Z + A;
@@ -106,7 +106,8 @@ describe "Compiling error detection" do
     end
     it 'has only 4 errors' do
       compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
-      # puts compiling_context.source_code.errors
+      puts compiling_context.class
+      puts compiling_context.source_code.errors
       pending "Pending to tackle extra errors!"
       compiling_context.source_code.should have(4).errors
     end
@@ -114,6 +115,31 @@ describe "Compiling error detection" do
       compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
       duplicated_error, *_ = compiling_context.source_code.errors
       duplicated_error.should match /already.+A/i
+    end
+    it 'extends boolean operators to any operand' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      _, extra_parenthesis = compiling_context.source_code.errors
+      extra_parenthesis.should match /\(/
+    end
+    it 'extends do with then' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      _, then_error = compiling_context.source_code.errors
+      then_error.should match /do.*then/
+    end
+    it 'expects open parenthesis in readLn X' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      _, _, left_par_error = compiling_context.source_code.errors
+      left_par_error.should match /\(\(\).*/
+    end
+    it 'expects closing parenthesis in readLn X' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      _, _, _, right_par_error = compiling_context.source_code.errors
+      right_par_error.should match /\(\)\).*/
+    end
+    it 'notifies that MULTIPLICAR should be a variable' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      _, _, _, _, multiplicar_error = compiling_context.source_code.errors
+      multiplicar_error.should match /undeclared.*multiplicar/i
     end
   end
 end
