@@ -79,7 +79,7 @@ module Ploc::PL0
     Syntax.after(:call_procedure) do |(call, procedure_identifier), source_code|
       context = source_code.context
       procedure = context.retrieve_procedure(procedure_identifier.token) if procedure_identifier
-      context.compile_call_procedure(procedure)
+      context.compile_call_procedure(procedure) if procedure
     end
     Syntax.after(:odd) do |odd, source_code|
       source_code.context.push_boolean_operand(odd)

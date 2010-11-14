@@ -255,7 +255,6 @@ describe "Compiling error detection" do
     end
     it 'has only 4 errors' do
       compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
-      puts compiling_context.source_code.errors
       compiling_context.source_code.should have(4).errors
     end
     it 'notifies that DO should be an identifier' do
@@ -277,6 +276,58 @@ describe "Compiling error detection" do
       compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
       _, _, _, missing_point = compiling_context.source_code.errors
       missing_point.should match /expresion.*found.*\)/i
+    end
+  end
+  context 'MAL-05.PL0' do
+    before(:each) do
+      # if Y ( 0 then B := -B;
+      @src = StringIO.new(<<-MAL)
+        VAR R, N;
+
+        PROCEDURE INICIALIZAR;
+        CONST UNO = ;
+        R := -(-UNO);
+
+        PROCEDURE RAIZ;
+        BEGIN
+          CALL N;
+          WHILE R * R < N DO R := R + 1
+        END;
+
+        BEGIN
+          WRITE ('N: '); READLN (N);
+          WRITE ('RAIZ CUADRADA DE ', N, ': ');
+          IF N < 0 THEN WRITE ('ERROR');
+          IF N = 0 THEN WRITE (0);
+          IF N > 0 THEN
+            BEGIN
+              CALL RAIZ;
+              IF R* <>N THEN WRITE (R - 1, '..');
+              WRITE (R);
+            END;
+          WRITELN
+        END.
+      MAL
+    end
+    it 'has only 3 errors' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      puts compiling_context.source_code.errors
+      compiling_context.source_code.should have(3).errors
+    end
+    it 'notifies missing number' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      missing_separator, _ = compiling_context.source_code.errors
+      missing_separator.should match /number.*found.*;/i
+    end
+    it 'notifies N its not a procedure' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      _, wrong_type = compiling_context.source_code.errors
+      wrong_type.should match /wrong.*type.*N.*procedure.*/i
+    end
+    it 'notifies N its not a procedure' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      _, _, missing_number = compiling_context.source_code.errors
+      missing_number.should match /expecting.*found.*<>.*/i
     end
   end
 end
