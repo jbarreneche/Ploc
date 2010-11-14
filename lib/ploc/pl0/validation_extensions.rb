@@ -11,5 +11,14 @@ module Ploc::PL0
     Syntax.nodes[:declare_variables].separator_is_weak!
     Syntax.nodes[:assignment].on_error_flush_until_terminator!
     Syntax.nodes[:multiple_sentences].on_fail_terminator_resync_to_separator!
+    Syntax.nodes[:string].extend_to ::Ploc::Token::Unknown
+    branch = Syntax.nodes[:output_expression].__send__(:sequence_nodes).first
+    def branch.call_without_callbacks(source_code)
+      super || begin
+        source_code.next_token while source_code.current_token != ')' and source_code.current_token != 'end'
+        # ::Kernel.puts "source_code.current_token #{source_code.current_token}"
+        source_code.current_token
+      end
+    end
   end
 end
