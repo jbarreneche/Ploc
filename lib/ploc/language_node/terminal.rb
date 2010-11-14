@@ -15,7 +15,7 @@ module Ploc::LanguageNode
         current
       else
         report_found_unexpected_token(source_code, "Expecting #{self.matcher.inspect}")
-        source_code.next_token if language_extensions.any? {|le| le.matches?(source_code.current_token) }
+        source_code.next_token if language_extensions.any? {|le| le.matches?(source_code.current_token) } || ::Ploc::Token::Unknown === source_code.current_token
       end
     end
     def matches_first?(token)

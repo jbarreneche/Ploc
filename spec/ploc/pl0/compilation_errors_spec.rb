@@ -21,6 +21,10 @@ describe "Compiling error detection" do
         end.
       MAL
     end
+    it 'has only 2 errors' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      compiling_context.source_code.should have(2).errors
+    end
     it 'extends assignation syntax as = instead of :=' do
       compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
       equal_error, separator_error = compiling_context.source_code.errors
@@ -31,12 +35,8 @@ describe "Compiling error detection" do
       _, separator_error = compiling_context.source_code.errors
       separator_error.should match /;/
     end
-    it 'has only 2 errors' do
-      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
-      compiling_context.source_code.should have(2).errors
-    end
   end
-  context 'MAL-01.PL0' do
+  context 'MAL-01.PL0 (1st)' do
     before(:each) do
       @src = StringIO.new(<<-MAL)
         VAR BASE, EXPO, RESU;
@@ -60,17 +60,59 @@ describe "Compiling error detection" do
         END.
       MAL
     end
+    it 'has cascading errors' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      # puts compiling_context.source_code.errors
+      # compiling_context.source_code.should have(7).errors
+    end
+    it 'notifies missing =' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      missing_separator, _ = compiling_context.source_code.errors
+      missing_separator.should match /procedur.*/i
+    end
+  end
+  context 'MAL-01.PL0 (2nd)' do
+    before(:each) do
+      @src = StringIO.new(<<-MAL)
+        VAR BASE, EXPO, RESU;
+
+        PROCEDURE POT;
+        IF EXPO > 0 THEN
+           BEGIN
+                RESU = RESU * BASE;
+                EXPO := EXPO - 1;
+                CALL POT
+           END;
+
+        BEGIN
+             WRITE ('BASE: '); READLN(BASE);
+             WRITE ('EXPONENTE: '); READLN(EXPO)
+             RESU := 1;
+             CALL POT;
+             IF EXPO < 0  RESU := 0;
+             WRITELN ('RESULTADO: ', RESU);
+             WRITELN
+        END.
+      MAL
+    end
+    it 'has only 3 errors' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      compiling_context.source_code.should have(3).errors
+    end
     it 'extends assignation syntax as = instead of :=' do
       compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
-      _, equal_error = compiling_context.source_code.errors
+      equal_error, _ = compiling_context.source_code.errors
       equal_error.should match /:=.+=/
     end
-    it 'allows weak separator for multiple sentences' do
-      pending "Cascades procedur en lugar de procedure??"
+    it 'notifies missing separator' do
       compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
-      _, *separator_error = compiling_context.source_code.errors
-      puts compiling_context.source_code.errors
-      # separator_error.should match /;/
+      _, missing_separator = compiling_context.source_code.errors
+      missing_separator.should match /expecting.*;.*/i
+    end
+    it 'notifies missing then' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      _, _, missing_separator = compiling_context.source_code.errors
+      missing_separator.should match /expecting.*then.*found.*RESU/i
     end
   end
   context 'MAL-02.PL0' do
@@ -141,7 +183,6 @@ describe "Compiling error detection" do
   end
   context 'MAL-03.PL0' do
     before(:each) do
-      # if Y ( 0 then B := -B;
       @src = StringIO.new(<<-MAL)
         var DO, X, Y, Q, R;
 
@@ -533,7 +574,121 @@ describe "Compiling error detection" do
       missing_par.should match /\).*/i
     end
   end
+  context 'MAL-07.PL0 (1st)' do
+    before(:each) do
+      @src = StringIO.new(<<-MAL)
+        CONST N 20;
 
+        VAR A, B, C;
+
+        PROCEDURE TRI#NGULO;
+        VAR A, B;
+        BEGIN
+          WRITELN;
+          A := 15;
+          WHILE A > 0 DO
+            BEGIN
+              B := 0;
+              WHILE B < A DO
+                BEGIN
+                  WRITE ('*')
+                  B := B + 1
+                END;
+              WRITELN;
+              A := A - 1;
+            END
+        END;
+
+        BEGIN
+          A := 111111;
+          WHILE A <= N DO
+            BEGIN
+              WRITE (A, ' ');
+              A := A + TRIANGULO
+            END;
+
+          CALL TRIANGULO;
+
+          B := -N;
+          C := 0;
+          WHILE B < C DO
+            BEGIN
+              WRITE (B, ' ');
+              B := B + 1
+            END;
+          WRITELN;
+
+        END.
+      MAL
+    end
+    it 'has cascading errors' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      # puts compiling_context.source_code.errors
+      # compiling_context.source_code.should have(7).errors
+    end
+    it 'notifies missing =' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      missing_separator, _ = compiling_context.source_code.errors
+      missing_separator.should match /expecting.*=.*/i
+    end
+    it 'expects ) after all wrong something' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      _, wrong_symbol = compiling_context.source_code.errors
+      wrong_symbol.should match /#.*/i
+    end
+  end
+  context 'MAL-07.PL0 (2nd)' do
+    before(:each) do
+      @src = StringIO.new(<<-MAL)
+        CONST N = 20;
+
+        VAR A, B, C;
+
+        PROCEDURE TRIANGULO;
+        VAR A, B;
+        BEGIN
+          WRITELN;
+          A := 15;
+          WHILE A > 0 DO
+            BEGIN
+              B := 0;
+              WHILE B < A DO
+                BEGIN
+                  WRITE ('*')
+                  B := B + 1
+                END;
+              WRITELN;
+              A := A - 1;
+            END
+        END;
+
+        BEGIN
+          A := 111111;
+          WHILE A <= N DO
+            BEGIN
+              WRITE (A, ' ');
+              A := A + TRIANGULO
+            END;
+
+          CALL TRIANGULO;
+
+          B := -N;
+          C := 0;
+          WHILE B < C DO
+            BEGIN
+              WRITE (B, ' ');
+              B := B + 1
+            END;
+          WRITELN;
+
+        END.
+      MAL
+    end
+    it 'has only 2 errors' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      compiling_context.source_code.should have(2).errors
+    end
+  end
   context 'MAL-08.PL0' do
     before(:each) do
       @src = StringIO.new(<<-MAL)
@@ -559,11 +714,9 @@ describe "Compiling error detection" do
           writeln (10)
       MAL
     end
-    it 'has only 5 errors' do
+    it 'has only 7 errors' do
       compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
-      puts compiling_context.source_code.errors
-      pending ''
-      compiling_context.source_code.should have(2).errors
+      compiling_context.source_code.should have(7).errors
     end
     it 'notifies missing separator' do
       compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
@@ -598,6 +751,20 @@ describe "Compiling error detection" do
     it 'notifies missing .' do
       compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
       _, _, _, _, _, _, missing = compiling_context.source_code.errors
+      missing.should match /expecting.*\..*/i
+    end
+  end
+  context 'MAL-08.PL0' do
+    before(:each) do
+      @src = StringIO.new("")
+    end
+    it 'has only 1 errors' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      compiling_context.source_code.should have(1).errors
+    end
+    it 'notifies missing .' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      missing, _ = compiling_context.source_code.errors
       missing.should match /expecting.*\..*/i
     end
   end
