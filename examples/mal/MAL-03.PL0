@@ -1,0 +1,51 @@
+var DO, X, Y, Q, R;
+
+procedure DIVIDIR;
+var V W;
+begin
+  Q := 0;
+  R := X; if R < 0 then R := -R;
+  W := Y; if W < 0 then W := -W;
+  V := Y; if V < 0 then V:= -V;
+  while W <= R do W := W * 2;
+  while W > V do
+    begin
+      Q := Q * 2; W := W / 2;
+      if W <= R then
+        begin
+          R := R - W; Q := Q + 1
+        end
+    end;
+  if X < 0 then R:= -R;
+  if X < 0 then Q:= -Q;
+  if Y < 0 then Q:= -Q;
+end;
+
+procedure OTRO;
+  procedure DIVIDIR;
+  begin
+    Q := X / Y; R := X - Y * Q
+  end;
+call DIVIDIR;
+
+procedure SALIDA;
+begin
+  write ('Cociente: ', Q); writeln;
+  write ('Resto: ', R); writeln;
+end;
+
+begin
+  write ('Dividendo: '); readln (X);
+  write ('Divisor: '); readln (Y);
+  writeln;
+  if Y <> 0 then
+    begin
+      write ('Metodo 1'); writeln;
+      call DIVIDIR;
+      call SALIDA; writeln;
+      write ('Metodo 2'); writeln;
+      call OTRO;
+      call SALIDA;
+    end
+end
+end
