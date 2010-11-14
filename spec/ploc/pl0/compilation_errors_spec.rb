@@ -104,12 +104,12 @@ describe "Compiling error detection" do
         end.
       MAL
     end
-    it 'has only 4 errors' do
+    it 'has only 6 errors' do
       compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
-      puts compiling_context.class
-      puts compiling_context.source_code.errors
-      pending "Pending to tackle extra errors!"
-      compiling_context.source_code.should have(4).errors
+      # puts compiling_context.class
+      # puts compiling_context.source_code.errors
+      # pending "Pending to tackle extra errors!"
+      compiling_context.source_code.should have(6).errors
     end
     it 'detects already declared variable A' do
       compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
@@ -139,7 +139,89 @@ describe "Compiling error detection" do
     it 'notifies that MULTIPLICAR should be a variable' do
       compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
       _, _, _, _, multiplicar_error = compiling_context.source_code.errors
-      multiplicar_error.should match /undeclared.*multiplicar/i
+      multiplicar_error.should match /wrong.*type.*multiplicar.*variable/i
+    end
+  end
+  context 'MAL-03.PL0' do
+    before(:each) do
+      # if Y ( 0 then B := -B;
+      @src = StringIO.new(<<-MAL)
+        var DO, X, Y, Q, R;
+
+        procedure DIVIDIR;
+        var V W;
+        begin
+          Q := 0;
+          R := X; if R < 0 then R := -R;
+          W := Y; if W < 0 then W := -W;
+          V := Y; if V < 0 then V:= -V;
+          while W <= R do W := W * 2;
+          while W > V do
+            begin
+              Q := Q * 2; W := W / 2;
+              if W <= R then
+                begin
+                  R := R - W; Q := Q + 1
+                end
+            end;
+          if X < 0 then R:= -R;
+          if X < 0 then Q:= -Q;
+          if Y < 0 then Q:= -Q;
+        end;
+
+        procedure OTRO;
+          procedure DIVIDIR;
+          begin
+            Q := X / Y; R := X - Y * Q
+          end;
+        call DIVIDIR;
+
+        procedure SALIDA;
+        begin
+          write ('Cociente: ', Q); writeln;
+          write ('Resto: ', R); writeln;
+        end;
+
+        begin
+          write ('Dividendo: '); readln (X);
+          write ('Divisor: '); readln (Y);
+          writeln;
+          if Y <> 0 then
+            begin
+              write ('Metodo 1'); writeln;
+              call DIVIDIR;
+              call SALIDA; writeln;
+              write ('Metodo 2'); writeln;
+              call OTRO;
+              call SALIDA;
+            end
+        end
+        end
+      MAL
+    end
+    it 'has only 4 errors' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      compiling_context.source_code.should have(4).errors
+    end
+    it 'notifies that DO should be an identifier' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      do_error, _ = compiling_context.source_code.errors
+      do_error.should match /identifier.*reserved.*word.*do/i
+    end
+    it 'notifies missing separator , in variable declaration' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      _, missing_separator = compiling_context.source_code.errors
+      missing_separator.should match /,.*found.*W/i
+    end
+    it 'notifies expects . instead of extra end' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      _, _, missing_point = compiling_context.source_code.errors
+      missing_point.should match /\..*found.*end/i
+    end
+    it 'notifies garbage' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      _, _, _, missing_point = compiling_context.source_code.errors
+      missing_point.should match /garbage.*found.*end/i
     end
   end
 end

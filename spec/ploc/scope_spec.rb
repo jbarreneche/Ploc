@@ -101,11 +101,18 @@ describe Ploc::Scope do
       subcontext.retrieve_variable(:foo) == foo_var
     end
     it 'raises UndeclaredIdentifierError when not declared' do
+      foo_var = subject.declare(:variable, :bar)
+      subcontext = subject.build_subcontext
+      expect {
+        subcontext.retrieve_constant(:foo)
+      }.to raise_error(Ploc::UndeclaredIdentifierError)
+    end
+    it 'raises WrongTypeDeclarationError when the declared type doesnt match the fetch type' do
       foo_var = subject.declare(:variable, :foo)
       subcontext = subject.build_subcontext
       expect {
-        subcontext.retrieve_constant(:foo) == foo_var
-      }.to raise_error(Ploc::UndeclaredIdentifierError)
+        subcontext.retrieve_constant(:foo)
+      }.to raise_error(Ploc::WrongTypeDeclarationError)
     end
   end
 end

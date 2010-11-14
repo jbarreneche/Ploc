@@ -51,6 +51,8 @@ module Ploc
       self.source_code.report_error "Undeclared variable #{name}"
       # Declare something just to keep the workflow going on
       declare_variable(name)
+    rescue Ploc::WrongTypeDeclarationError
+      self.source_code.report_error "#Wrong declaration type. Expecting #{name} to be a variable"
     end
 
     def declare(type, name, *args)

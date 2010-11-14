@@ -35,6 +35,12 @@ module Ploc::LanguageNode
     def separator_is_weak!
       @options[:weak_separator] ||= true
     end
+    def on_error_flush_until_terminator!
+      @options[:on_error_flush_until_terminator] = true
+    end
+    def on_error_flush_until_separator!
+      @options[:on_error_flush_until_separator] = true
+    end
   private
     def separator_node
       @separator_node ||= fetch_node(@options[:separator]) if @options[:separator]
@@ -62,7 +68,10 @@ module Ploc::LanguageNode
     def call_sequence(sc)
       _run_sequence_callbacks(sc) do |source_code|
         sequence_nodes.inject([]) do |sequence_tokens, node|
-          sequence_tokens << node.call(source_code)
+          result = node.call(source_code)
+          resync_to_terminator(sequence_tokens, node, source_code) and break(sequence_tokens) if !result && on_error_flush_until_terminator?
+          resync_to_separator(sequence_tokens, node, source_code) and redo if !result && on_error_flush_until_separator?
+          sequence_tokens << result
         end.compact
       end
     end
@@ -107,6 +116,26 @@ module Ploc::LanguageNode
       block.call(*args).tap do |result|
         @after_each_callbacks.each {|cb| cb.call(result, *args)}
       end
+    end
+    def on_error_flush_until_terminator?
+      @options[:on_error_flush_until_terminator]
+    end
+    def on_error_flush_until_separator?
+      @options[:on_error_flush_until_separator]
+    end
+    def resync_to_terminator(sequence_tokens, node, source_code)
+      unless terminator_node
+        sequence_tokens.clear
+      end
+    end
+    def resync_to_separator(sequence_tokens, node, source_code)
+      if separator_node
+        source_code.next_token while (!separator_node.matches_first?(source_code.current_token) && source_code.current_token) 
+        source_code.next_token if source_code.current_token
+      else
+        source_code.next_token
+      end
+      sequence_tokens.clear
     end
     # def puts(*args)
     #   ::Kernel.puts *args

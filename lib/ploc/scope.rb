@@ -1,12 +1,14 @@
 module Ploc
   class DuplicateDeclarationError < StandardError; end
   class UndeclaredIdentifierError < StandardError; end
+  class WrongTypeDeclarationError < StandardError; end
   class Scope
+    SUPPORTED_TYPES = [:constants, :variables, :procedures]
     attr_reader :context
     def initialize(context, parent = nil)
       @context = context
       @parent = parent
-      @local_declarations_hash = {constants:[], variables: [], procedures: []}
+      @local_declarations_hash = Hash[SUPPORTED_TYPES.map {|t| [t, []] }]
     end
     def constants
       local_constants + parent_constants
@@ -55,11 +57,16 @@ module Ploc
   protected
     def retrieve_from_local(name, *types)
       name = name.to_sym
-      local = types.map {|type| local_declarations_hash[type] }.flatten.detect {|ident| ident == name }
+      local = locals(*types).detect {|ident| ident == name }
+      wrong_type_local = locals(*(SUPPORTED_TYPES - types)).detect {|ident| ident == name } unless local
+      raise WrongTypeDeclarationError.new(wrong_type_local) if wrong_type_local
       parent = @parent.retrieve_from_local(name, *types) if !local && @parent
       local || parent or raise UndeclaredIdentifierError.new
     end
   private
+    def locals(*types)
+      types.inject([]) {|previous, type| previous + local_declarations_hash[type] }
+    end
     def local_variables
       local_declarations_hash[:variables]
     end
