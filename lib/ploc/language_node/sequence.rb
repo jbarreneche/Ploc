@@ -10,7 +10,13 @@ module Ploc::LanguageNode
     end
     def call_without_callbacks(source_code)
       transversed_tokens = recursive_call(source_code)
-      call_terminator(source_code)
+      if on_fail_terminator_resync_to_separator? && !terminator_node.matches_first?(source_code.current_token)
+        report_invalid_sequence_ending(source_code)
+        resync_to_separator([], sequence_nodes.first, source_code)
+        transversed_tokens = call_without_callbacks(source_code)
+      else
+        call_terminator(source_code)
+      end
       transversed_tokens
     end
     def matches_first?(token)
@@ -40,6 +46,9 @@ module Ploc::LanguageNode
     end
     def on_error_flush_until_separator!
       @options[:on_error_flush_until_separator] = true
+    end
+    def on_fail_terminator_resync_to_separator!
+      @options[:on_fail_terminator_resync_to_separator] = true
     end
   private
     def separator_node
@@ -123,6 +132,9 @@ module Ploc::LanguageNode
     def on_error_flush_until_separator?
       @options[:on_error_flush_until_separator]
     end
+    def on_fail_terminator_resync_to_separator?
+      @options[:on_fail_terminator_resync_to_separator]
+    end
     def resync_to_terminator(sequence_tokens, node, source_code)
       unless terminator_node
         sequence_tokens.clear
@@ -137,8 +149,8 @@ module Ploc::LanguageNode
       end
       sequence_tokens.clear
     end
-    # def puts(*args)
-    #   ::Kernel.puts *args
-    # end
+    def puts(*args)
+      ::Kernel.puts *args
+    end
   end
 end

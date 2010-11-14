@@ -10,5 +10,6 @@ module Ploc::PL0
     Syntax.nodes[:declare_variables].on_error_flush_until_separator!
     Syntax.nodes[:declare_variables].separator_is_weak!
     Syntax.nodes[:assignment].on_error_flush_until_terminator!
+    Syntax.nodes[:multiple_sentences].on_fail_terminator_resync_to_separator!
   end
 end

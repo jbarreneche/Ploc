@@ -30,7 +30,7 @@ module Ploc::PL0
     define :sentence do
       optional do
         branch do
-          sequence { _begin; multiple_sentences; _end }
+          sequence { _begin; multiple_sentences }
           sequence(name: :assignment) { identifier; assign; expression}
           sequence(name: :call_procedure) { _call; identifier }
           sequence(name: :branch) {_if; condition; _then; sentence}
@@ -41,7 +41,7 @@ module Ploc::PL0
         end
       end
     end
-    define(:multiple_sentences, separator: :semicolon) { sentence }
+    define(:multiple_sentences, separator: :semicolon, terminator: :_end) { sentence }
     define :output_params do
       left_par
       sequence(separator: :comma) { output_expression } 

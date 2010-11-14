@@ -75,7 +75,6 @@ describe "Compiling error detection" do
   end
   context 'MAL-02.PL0' do
     before(:each) do
-      # if Y ( 0 then B := -B;
       @src = StringIO.new(<<-MAL)
         var X, Y, Z;
 
@@ -86,6 +85,7 @@ describe "Compiling error detection" do
              B := Y;
              Z := 0;
              if X < 0 then A := -A;
+             if Y ( 0 then B := -B;
              while B > 0 then
                  begin
                    if odd B then Z:= Z + A;
@@ -104,12 +104,9 @@ describe "Compiling error detection" do
         end.
       MAL
     end
-    it 'has only 6 errors' do
+    it 'has only 7 errors' do
       compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
-      # puts compiling_context.class
-      # puts compiling_context.source_code.errors
-      # pending "Pending to tackle extra errors!"
-      compiling_context.source_code.should have(6).errors
+      compiling_context.source_code.should have(7).errors
     end
     it 'detects already declared variable A' do
       compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
@@ -123,22 +120,22 @@ describe "Compiling error detection" do
     end
     it 'extends do with then' do
       compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
-      _, then_error = compiling_context.source_code.errors
+      _, _, then_error = compiling_context.source_code.errors
       then_error.should match /do.*then/
     end
     it 'expects open parenthesis in readLn X' do
       compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
-      _, _, left_par_error = compiling_context.source_code.errors
+      _, _, _, left_par_error = compiling_context.source_code.errors
       left_par_error.should match /\(\(\).*/
     end
     it 'expects closing parenthesis in readLn X' do
       compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
-      _, _, _, right_par_error = compiling_context.source_code.errors
+      _, _, _, _, right_par_error = compiling_context.source_code.errors
       right_par_error.should match /\(\)\).*/
     end
     it 'notifies that MULTIPLICAR should be a variable' do
       compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
-      _, _, _, _, multiplicar_error = compiling_context.source_code.errors
+      _, _, _, _, _, multiplicar_error = compiling_context.source_code.errors
       multiplicar_error.should match /wrong.*type.*multiplicar.*variable/i
     end
   end
@@ -222,6 +219,64 @@ describe "Compiling error detection" do
       compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
       _, _, _, missing_point = compiling_context.source_code.errors
       missing_point.should match /garbage.*found.*end/i
+    end
+  end
+  context 'MAL-04.PL0' do
+    before(:each) do
+      # if Y ( 0 then B := -B;
+      @src = StringIO.new(<<-MAL)
+        var X, Y Z;
+
+        procedure MCD
+        var F,G;
+        begin
+          F := X; G := Y;
+          while F <> G do
+            begin
+              if F < G then  G := G - F;
+              IF G < F then  F := F - G
+            end;
+          Z:= F
+        end;
+
+        begin
+          do write ('X: '); readln (X);
+          if X > 0 then
+            begin
+              write ('Y: '); readln (Y);
+              if Y > 0 then
+                begin
+                  call MCD;
+                  writeln ('MCD: ', Z); writeln ()
+                end
+            end
+        end.
+      MAL
+    end
+    it 'has only 4 errors' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      puts compiling_context.source_code.errors
+      compiling_context.source_code.should have(4).errors
+    end
+    it 'notifies that DO should be an identifier' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      missing_separator, _ = compiling_context.source_code.errors
+      missing_separator.should match /,.*found.*Z/i
+    end
+    it 'notifies missing separator , in variable declaration' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      _, missing_separator = compiling_context.source_code.errors
+      missing_separator.should match /;.*found.*VAR/i
+    end
+    it 'notifies expects . instead of extra end' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      _, _, unexpected_reserved_word = compiling_context.source_code.errors
+      unexpected_reserved_word.should match /found.*do/i
+    end
+    it 'notifies garbage' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      _, _, _, missing_point = compiling_context.source_code.errors
+      missing_point.should match /expresion.*found.*\)/i
     end
   end
 end

@@ -49,7 +49,7 @@ module Ploc::LanguageNode
     def report_error_on(source_code, explanation)
       source_code.report_error explanation
     end
-    def method_missing(meth, options = {}, &block)
+    def method_missing(meth, options = {}, *args, &block)
       unless @initialization_finished
         add_node(nil, meth)
       else
