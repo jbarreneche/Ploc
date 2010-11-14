@@ -533,4 +533,72 @@ describe "Compiling error detection" do
       missing_par.should match /\).*/i
     end
   end
+
+  context 'MAL-08.PL0' do
+    before(:each) do
+      @src = StringIO.new(<<-MAL)
+        var K;
+        procedure P;
+          procedure coma;
+          begin
+            write (',')
+            K := K + 1;
+            call P
+          end;
+        begin
+          if K < 10 then
+            begin
+              write coma;
+              call K;
+            end
+        end;
+
+        begin
+          K := 1;
+          call P;
+          writeln (10)
+      MAL
+    end
+    it 'has only 5 errors' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      puts compiling_context.source_code.errors
+      pending ''
+      compiling_context.source_code.should have(2).errors
+    end
+    it 'notifies missing separator' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      missing_separator, _ = compiling_context.source_code.errors
+      missing_separator.should match /expecting.*;.*/i
+    end
+    it 'expects ( after write' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      _, missing_par = compiling_context.source_code.errors
+      missing_par.should match /\(.*found.*coma/i
+    end
+    it 'expects expression to be of const or variable' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      _, _, wrong_type = compiling_context.source_code.errors
+      wrong_type.should match /wrong.*type.*coma.*constant.*/i
+    end
+    it 'expects ) after all wrong something' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      _, _, _, missing_par = compiling_context.source_code.errors
+      missing_par.should match /\).*found.*;/i
+    end
+    it 'expects expression to be of const or variable' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      _, _, _, _, wrong_type = compiling_context.source_code.errors
+      wrong_type.should match /wrong.*type.*K.*procedure.*/i
+    end
+    it 'notifies missing end' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      _, _, _, _, _, missing = compiling_context.source_code.errors
+      missing.should match /expecting.*end.*/i
+    end
+    it 'notifies missing .' do
+      compiling_context = Ploc::PL0::Language.compile @src, StringIO.new
+      _, _, _, _, _, _, missing = compiling_context.source_code.errors
+      missing.should match /expecting.*\..*/i
+    end
+  end
 end

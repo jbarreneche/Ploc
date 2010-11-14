@@ -22,7 +22,7 @@ module Ploc::PL0
     Syntax.after(:procedure) do |_, source_code|
       context = source_code.context
       procedure_name = source_code.current_token
-      context.declare_procedure(procedure_name, context.current_text_address)
+      context.declare_procedure(procedure_name, context.current_text_address) 
     end
     Syntax.before(:procedure_block) do |source_code|
       context = source_code.context

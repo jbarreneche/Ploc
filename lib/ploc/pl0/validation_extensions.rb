@@ -15,8 +15,7 @@ module Ploc::PL0
     branch = Syntax.nodes[:output_expression].__send__(:sequence_nodes).first
     def branch.call_without_callbacks(source_code)
       super || begin
-        source_code.next_token while source_code.current_token != ')' and source_code.current_token != 'end'
-        # ::Kernel.puts "source_code.current_token #{source_code.current_token}"
+        source_code.next_token while source_code.current_token && source_code.current_token != ')' && source_code.current_token != 'end'
         source_code.current_token
       end
     end
