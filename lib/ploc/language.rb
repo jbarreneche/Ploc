@@ -4,12 +4,13 @@ require 'ploc/validation_context'
 
 module Ploc
   class Language
-    attr_accessor :parser, :scanner_builder, :context_builder
+    attr_accessor :parser, :scanner_builder, :context_builder, :error_output_builder
 
     def initialize(attrs = {})
       self.parser ||= attrs[:parser]
       self.scanner_builder ||= attrs[:scanner_builder]
       self.context_builder ||= attrs[:context_builder]
+      self.error_output_builder ||= attrs[:error_output_builder]
     end
     def compile(program, output = StringIO.new)
       new_compiling_context(program, output).tap do |compiler|
@@ -32,8 +33,12 @@ module Ploc
     def new_validation_context(program)
       ValidationContext.new(new_source_code(program))
     end
+    def new_error_output(scanner)
+      self.error_output_builder ? self.error_output_builder.call(scanner) : []
+    end
     def new_source_code(program)
-      SourceCode.new(scan(program))
+      scanner = scan(program)
+      SourceCode.new(scanner, new_error_output(scanner))
     end
   end
 end

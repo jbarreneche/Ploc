@@ -5,9 +5,9 @@ module Ploc
     attr_reader :errors
     attr_accessor :context
 
-    def initialize(*args)
-      super
-      @errors = []
+    def initialize(scanner, *args)
+      super(scanner)
+      @errors = args.shift || []
     end
     
     def next_token

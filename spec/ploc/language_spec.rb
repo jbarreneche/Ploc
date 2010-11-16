@@ -24,7 +24,7 @@ describe Ploc::Language do
     subject.stub_chain(:scanner_builder, :call) { scanner }
     subject.should_receive(:parser) { parser }
 
-    Ploc::SourceCode.should_receive(:new).with(scanner) { source_code }
+    Ploc::SourceCode.should_receive(:new).with(scanner, an_instance_of(Array)) { source_code }
     Ploc::ValidationContext.should_receive(:new).with(source_code) { context }
     subject.parse("program").should == []
   end
@@ -35,7 +35,7 @@ describe Ploc::Language do
     subject.stub_chain(:context_builder, :call) { context }
     subject.should_receive(:parser) { parser }
 
-    Ploc::SourceCode.should_receive(:new).with(scanner) { source_code }
+    Ploc::SourceCode.should_receive(:new).with(scanner, an_instance_of(Array)) { source_code }
     subject.compile("program").should == context
   end
 end

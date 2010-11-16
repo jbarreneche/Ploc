@@ -3,6 +3,7 @@
 $:.unshift File.expand_path(File.join(File.dirname(__FILE__), *%w[.. lib]))
 
 require 'ploc/pl0'
+require 'ploc/formated_output'
 require 'fileutils'
 
 if ARGV.empty?
@@ -30,8 +31,8 @@ File.open(filename) do |input|
     STDERR.puts "** can't write output to file: #{output_name}" 
     exit 1
   end
+  Ploc::PL0::Language.error_output_builder= ->(scanner) { ::Ploc::FormatedOutput.new(scanner) }
   context = Ploc::PL0::Language.compile input, out
-  puts "Errors: #{context.source_code.errors}"
   FileUtils.chmod 0755, output_name
 end
 
