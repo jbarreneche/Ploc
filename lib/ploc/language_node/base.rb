@@ -44,7 +44,8 @@ module Ploc::LanguageNode
     end
   private
     def report_found_unexpected_token(source_code, expected_message)
-      report_error_on(source_code, "#{expected_message} but found #{source_code.current_token.inspect}")
+      current_token_inspect = source_code.current_token ? source_code.current_token.inspect : 'EOF'
+      report_error_on(source_code, "#{expected_message} but found #{current_token_inspect}")
     end
     def report_error_on(source_code, explanation)
       source_code.report_error explanation

@@ -50,6 +50,9 @@ module Ploc::LanguageNode
     def on_fail_terminator_resync_to_separator!
       @options[:on_fail_terminator_resync_to_separator] = true
     end
+    def matcher_inspect
+      starting_nodes.map(&:matcher_inspect).join(' or ')
+    end
   private
     def separator_node
       @separator_node ||= fetch_node(@options[:separator]) if @options[:separator]
@@ -90,7 +93,7 @@ module Ploc::LanguageNode
         recursive_call(source_code, transversed_tokens)
       else
         if separator_is_weak? && matches_first?(source_code.current_token)
-          report_found_unexpected_token(source_code, "Expecting separator #{separator_node.inspect}")
+          report_found_unexpected_token(source_code, "Expecting separator #{separator_node.matcher_inspect}")
           recursive_call(source_code, transversed_tokens)
         else
           transversed_tokens
@@ -109,11 +112,11 @@ module Ploc::LanguageNode
     def report_invalid_sequence_ending(source_code)
       case
       when separator_node && terminator_node
-        report_found_unexpected_token(source_code, "Expecting separator #{separator_node.inspect} or terminator #{terminator_node.inspect}")
+        report_found_unexpected_token(source_code, "Expecting separator #{separator_node.matcher_inspect} or terminator #{terminator_node.matcher_inspect}")
       when separator_node
-        report_found_unexpected_token(source_code, "Expecting separator #{separator_node.inspect}")
+        report_found_unexpected_token(source_code, "Expecting separator #{separator_node.matcher_inspect}")
       when terminator_node
-        report_found_unexpected_token(source_code, "Expecting terminator #{terminator_node.inspect} or #{starting_nodes.inspect}")
+        report_found_unexpected_token(source_code, "Expecting terminator #{terminator_node.matcher_inspect} or #{starting_nodes.map(&:matcher_inspect)}")
       else
         nil
       end

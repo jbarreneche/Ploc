@@ -3,8 +3,14 @@ module Ploc::Token
     def self.build(token)
       new(token)
     end
+    def self.to_s
+      super[/[^:]+$/]
+    end
     def to_s
       self.token.to_s
+    end
+    def inspect
+      "#{self.class}(#{self.to_s})"
     end
     def ==(o)
       case o

@@ -21,6 +21,9 @@ module Ploc::LanguageNode
     def matches_first?(token)
       self.matcher.matches?(token)
     end
+    def matcher_inspect
+      @matcher.inspect
+    end
     def inspect
       "<Node terminal:#{self.matcher.inspect}>"
     end

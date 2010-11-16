@@ -10,7 +10,7 @@ module Ploc::LanguageNode
       if node
         node.call(source_code)
       else
-        report_found_unexpected_token(source_code, "Expecting any of #{branch_nodes.inspect}")
+        report_found_unexpected_token(source_code, "Expecting any of #{matcher_inspect}")
         nil
       end
     end
@@ -27,5 +27,15 @@ module Ploc::LanguageNode
     def inspect
       "<branch branches:#{@branches.inspect}>"
     end
+    def matcher_inspect
+      branch_nodes.map(&:matcher_inspect).join(' or ')
+    end
+  #   def on_fail_skip!
+  #     @options[:on_fail_skip] = true
+  #   end
+  # private
+  #   def on_fail_skip?
+  #     @options[:on_fail_skip]
+  #   end
   end
 end

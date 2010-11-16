@@ -4,7 +4,7 @@ require 'forwardable'
 module Ploc::LanguageNode
   class Optional < Base
     extend ::Forwardable
-    def_delegators :@sequence, :add_after_each_callback, :matches_first?
+    def_delegators :@sequence, :add_after_each_callback, :matches_first?, :matcher_inspect
     def initialize(language, options = {}, &block)
       super(language) {}
       @sequence = Sequence.new(language, options, &block)
